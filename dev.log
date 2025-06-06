@@ -1,0 +1,29 @@
+
+> timebank-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.29
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1009ms
+(node:20037) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ○ Compiling / ...
+ ✓ Compiled / in 1858ms (712 modules)
+ ⨯ FirebaseError: Firebase: Error (auth/invalid-api-key).
+    at eval (./lib/firebase/config.ts:29:62)
+    at (ssr)/./lib/firebase/config.ts (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/app/page.js:294:1)
+    at __webpack_require__ (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/webpack-runtime.js:33:43)
+    at eval (./contexts/AuthContext.tsx:12:78)
+    at (ssr)/./contexts/AuthContext.tsx (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/app/page.js:283:1)
+    at __webpack_require__ (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/webpack-runtime.js:33:43)
+    at eval (./app/page.tsx:10:79)
+    at (ssr)/./app/page.tsx (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/app/page.js:272:1)
+    at Object.__webpack_require__ [as require] (/Users/runestudiox/APPELX/SX Timebank/timebank-system/.next/server/webpack-runtime.js:33:43)
+digest: "479209512"
+ GET / 500 in 2040ms
+ ✓ Compiled in 151ms (262 modules)
+   Reload env: .env.local
+ ✓ Compiled in 1078ms (712 modules)
+[?25h

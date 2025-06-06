@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    function isProjectManager() {
+      return isAuthenticated() && (getUserRole() == 'project_manager' || getUserRole() == 'admin');
+    }
+    
+    function isDeveloper() {
+      return isAuthenticated() && getUserRole() == 'developer';
+    }
+    
+    function isTeamMember(projectId) {
+      return isAuthenticated() && (
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers ||
+        isProjectManager()
+      );
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if true; // Allow registration
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Clients collection
+    match /clients/{clientId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isProjectManager();
+    }
+    
+    // Timebanks collection
+    match /timebanks/{timebankId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isProjectManager();
+    }
+    
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && (
+        isDeveloper() ? isTeamMember(projectId) : true
+      );
+      allow create, update, delete: if isProjectManager();
+    }
+    
+    // Time entries collection
+    match /timeEntries/{entryId} {
+      allow read: if isAuthenticated() && (
+        isDeveloper() ? request.auth.uid == resource.data.userId : true
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId || isProjectManager()
+      );
+      allow delete: if isProjectManager();
+    }
+    
+    // Email notifications collection
+    match /emailNotifications/{notificationId} {
+      allow read: if isProjectManager();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Invitations collection
+    match /invitations/{invitationId} {
+      allow read: if true; // Anyone can read invitations to validate tokens
+      allow create: if isProjectManager(); // Only project managers and admins can create invitations
+      allow update: if isProjectManager() || request.auth.uid == resource.data.invitedBy;
+      allow delete: if isAdmin();
+    }
+    
+    // System settings collection
+    match /system/{document} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

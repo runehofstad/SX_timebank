@@ -1,0 +1,103 @@
+
+> timebank-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.29
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1007ms
+(node:58960) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ○ Compiling / ...
+ ✓ Compiled / in 1808ms (712 modules)
+ GET / 200 in 2001ms
+ ✓ Compiled in 145ms (262 modules)
+ ✓ Compiled /dashboard in 375ms (778 modules)
+ ✓ Compiled /clients in 122ms (792 modules)
+ ✓ Compiled /timebanks in 123ms (800 modules)
+ ✓ Compiled /projects in 155ms (810 modules)
+ ✓ Compiled /time-tracking in 248ms (896 modules)
+ GET / 200 in 123ms
+ GET /dashboard 200 in 32ms
+ GET / 200 in 29ms
+ ✓ Compiled /settings in 250ms (914 modules)
+ ✓ Compiled /users in 173ms (924 modules)
+ GET /timebanks 200 in 157ms
+ GET /dashboard 200 in 31ms
+ GET /dashboard 200 in 25ms
+ ✓ Compiled in 528ms (909 modules)
+ GET /dashboard 200 in 62ms
+ GET /dashboard 200 in 26ms
+ ✓ Compiled in 348ms (923 modules)
+ ✓ Compiled in 208ms (923 modules)
+ ✓ Compiled in 271ms (923 modules)
+ GET /dashboard 200 in 130ms
+ ✓ Compiled /clients in 213ms (556 modules)
+ ✓ Compiled in 197ms (928 modules)
+ GET /dashboard 200 in 63ms
+ ✓ Compiled /projects/[id] in 236ms (936 modules)
+ ✓ Compiled / in 129ms (572 modules)
+ GET / 200 in 176ms
+ GET / 200 in 34ms
+ ✓ Compiled in 211ms (949 modules)
+ ✓ Compiled in 240ms (949 modules)
+ ✓ Compiled in 171ms (937 modules)
+ GET /dashboard 200 in 118ms
+ GET /dashboard 200 in 33ms
+ ✓ Compiled in 110ms (382 modules)
+ ✓ Compiled /projects/[id] in 120ms (563 modules)
+ GET /timebanks 200 in 54ms
+ ✓ Compiled in 248ms (945 modules)
+ ✓ Compiled in 298ms (989 modules)
+ GET /dashboard 200 in 49ms
+ ✓ Compiled /projects/[id] in 217ms (619 modules)
+ ✓ Compiled / in 109ms (617 modules)
+ GET / 200 in 146ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /favicon.ico in 229ms (1076 modules)
+ GET /favicon.ico 200 in 374ms
+ GET /apple-touch-icon-precomposed.png 404 in 429ms
+ GET /apple-touch-icon.png 404 in 421ms
+ GET /projects/lGvX5nWFCX2p8tZKEqrV 200 in 317ms
+ ✓ Compiled /projects in 132ms (656 modules)
+ GET /projects 200 in 189ms
+ ✓ Compiled /clients in 114ms (648 modules)
+ ✓ Compiled in 240ms (1088 modules)
+ ✓ Compiled in 245ms (1053 modules)
+ GET /dashboard 200 in 68ms
+ ✓ Compiled in 262ms (1048 modules)
+ GET /dashboard 200 in 59ms
+ ✓ Compiled in 228ms (1048 modules)
+ ✓ Compiled in 178ms (1048 modules)
+ GET /dashboard 200 in 61ms
+ GET /dashboard 200 in 35ms
+ GET /dashboard 200 in 36ms
+ ✓ Compiled in 303ms (1048 modules)
+ ✓ Compiled in 230ms (1048 modules)
+ ✓ Compiled in 205ms (1048 modules)
+ ✓ Compiled in 221ms (1048 modules)
+ GET /projects/lGvX5nWFCX2p8tZKEqrV 200 in 119ms
+ ✓ Compiled in 323ms (1048 modules)
+ ✓ Compiled in 166ms (1034 modules)
+ ✓ Compiled in 197ms (1048 modules)
+ ✓ Compiled in 205ms (1048 modules)
+ ✓ Compiled in 210ms (1048 modules)
+ ✓ Compiled in 213ms (1048 modules)
+ ✓ Compiled in 226ms (1048 modules)
+ ✓ Compiled in 221ms (1048 modules)
+ ✓ Compiled in 210ms (1048 modules)
+ ✓ Compiled /clients in 165ms (615 modules)
+ GET /projects/2YsoQX8otWZUodvpmXpr 200 in 111ms
+ ✓ Compiled /time-tracking in 180ms (614 modules)
+ ✓ Compiled / in 148ms (618 modules)
+ GET / 200 in 218ms
+ ✓ Compiled /settings in 124ms (628 modules)
+ ✓ Compiled /_not-found in 237ms (1035 modules)
+ GET /projects/lGvX5nWFCX2p8tZKEqrV/edit 404 in 63ms
+ GET /dashboard 200 in 72ms
+ ✓ Compiled / in 181ms (612 modules)
+ GET / 200 in 235ms
+ GET /dashboard 200 in 40ms
+[?25h
