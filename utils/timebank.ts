@@ -43,6 +43,7 @@ export const workCategories: { value: WorkCategory; label: string }[] = [
   { value: 'backend_development', label: 'Backend Development' },
   { value: 'frontend_development', label: 'Frontend Development' },
   { value: 'testing', label: 'Testing' },
+  { value: 'video_production', label: 'Video Production' },
   { value: 'other', label: 'Other' }
 ];
 

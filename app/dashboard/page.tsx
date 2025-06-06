@@ -11,7 +11,7 @@ import { Users, Clock, FolderOpen, AlertTriangle, Filter, ArrowUpDown, DollarSig
 import { calculateTimebankStatus, formatHours, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { useRouter } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
-import { format } from 'date-fns';
+import { format, isWithinInterval, addDays } from 'date-fns';
 
 type FilterType = 'alphabetic' | 'balance-low-high' | 'balance-high-low' | 'activity';
 
@@ -22,6 +22,8 @@ interface ProjectWithTimebank extends Project {
   usedHours: number;
   remainingHours: number;
   lastActivity?: Date;
+  isExpiringSoon?: boolean;
+  daysUntilExpiry?: number | null;
 }
 
 export default function DashboardPage() {
@@ -164,9 +166,36 @@ export default function DashboardPage() {
       const projectsWithTimebankData = await Promise.all(
         projects.map(async (project) => {
           const clientTimebanks = timebanksByClient[project.clientId] || [];
-          const totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
-          const usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
-          const remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
+          
+          // Find the active timebank (should be only one per client with new logic)
+          const activeTimebank = clientTimebanks.find(tb => tb.status === 'active');
+          
+          // Calculate based on the active timebank's current state
+          if (activeTimebank) {
+            // For active timebank: use its actual values
+            var totalHours = activeTimebank.totalHours;
+            var usedHours = activeTimebank.usedHours;
+            var remainingHours = activeTimebank.remainingHours;
+          } else {
+            // Legacy support: sum all timebanks
+            var totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
+            var usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
+            var remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
+          }
+          
+          // Check if timebank is expiring soon (within 30 days)
+          let isExpiringSoon = false;
+          let daysUntilExpiry: number | null = null;
+          if (activeTimebank && activeTimebank.expiryDate) {
+            const expiryDate = activeTimebank.expiryDate instanceof Date 
+              ? activeTimebank.expiryDate 
+              : activeTimebank.expiryDate.toDate();
+            const today = new Date();
+            const thirtyDaysFromNow = addDays(today, 30);
+            
+            isExpiringSoon = isWithinInterval(expiryDate, { start: today, end: thirtyDaysFromNow });
+            daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          }
           
           // Get last activity from time entries
           let lastActivity: Date | undefined;
@@ -194,6 +223,8 @@ export default function DashboardPage() {
             usedHours,
             remainingHours,
             lastActivity,
+            isExpiringSoon,
+            daysUntilExpiry,
           } as ProjectWithTimebank;
         })
       );
@@ -356,9 +387,23 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-4">
                   {filteredProjects.map((project) => {
+                    // Calculate actual usage percentage from the current timebank
                     const usedPercentage = project.totalHours > 0 
-                      ? ((project.totalHours - project.remainingHours) / project.totalHours) * 100 
-                      : 100;
+                      ? (project.usedHours / project.totalHours) * 100 
+                      : 0;
+                    const remainingPercentage = 100 - usedPercentage;
+                    
+                    // Determine colors based on remaining percentage
+                    let statusColor = 'text-green-600';
+                    let progressBarColor = 'bg-green-500';
+                    
+                    if (remainingPercentage <= 25) {
+                      statusColor = 'text-red-600';
+                      progressBarColor = 'bg-red-500';
+                    } else if (remainingPercentage <= 50) {
+                      statusColor = 'text-yellow-600';
+                      progressBarColor = 'bg-yellow-500';
+                    }
                     
                     return (
                       <div 
@@ -400,34 +445,41 @@ export default function DashboardPage() {
                         >
                           <div className="flex justify-between text-sm text-gray-600 mb-1">
                             <span>{formatHours(project.usedHours)} used of {formatHours(project.totalHours)} total</span>
-                            <span className={`font-medium ${
-                              usedPercentage > 75 ? 'text-red-600' : 
-                              usedPercentage > 50 ? 'text-yellow-600' : 
-                              'text-green-600'
-                            }`}>
+                            <span className={`font-medium ${statusColor}`}>
                               {formatHours(project.remainingHours)} remaining
                             </span>
                           </div>
-                          <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                             <div
-                              className={`h-2 transition-all ${
-                                usedPercentage > 75 ? 'bg-red-500' : 
-                                usedPercentage > 50 ? 'bg-yellow-500' : 
-                                'bg-green-500'
-                              }`}
+                              className={`h-2 transition-all ${progressBarColor}`}
                               style={{ width: `${usedPercentage}%` }}
                             />
                           </div>
                         </div>
                         
-                        {usedPercentage > 50 && (
-                          <div className={`mt-2 flex items-center text-sm ${
-                            usedPercentage > 75 ? 'text-red-600' : 'text-yellow-600'
-                          }`}>
-                            <AlertTriangle className="h-4 w-4 mr-1" />
-                            {usedPercentage > 75 ? 'Critical: Less than 25% hours remaining' : 'Warning: Less than 50% hours remaining'}
-                          </div>
-                        )}
+                        {/* Warning messages */}
+                        <div className="mt-2 space-y-1">
+                          {remainingPercentage <= 50 && (
+                            <div className={`flex items-center text-sm ${
+                              remainingPercentage <= 25 ? 'text-red-600' : 'text-yellow-600'
+                            }`}>
+                              <AlertTriangle className="h-4 w-4 mr-1" />
+                              {remainingPercentage <= 25 
+                                ? 'Critical: Less than 25% hours remaining' 
+                                : 'Warning: Less than 50% hours remaining'}
+                            </div>
+                          )}
+                          {project.isExpiringSoon && project.daysUntilExpiry !== null && (
+                            <div className="flex items-center text-sm text-orange-600">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {project.daysUntilExpiry <= 0 
+                                ? 'Timebank expired!' 
+                                : project.daysUntilExpiry === 1 
+                                  ? 'Timebank expires tomorrow!' 
+                                  : `Timebank expires in ${project.daysUntilExpiry} days`}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -523,6 +575,7 @@ export default function DashboardPage() {
                                   {category.value === 'backend_development' && 'Server, API, database work'}
                                   {category.value === 'frontend_development' && 'Web interface development'}
                                   {category.value === 'testing' && 'QA, testing, bug verification'}
+                                  {category.value === 'video_production' && 'Editing, Recording and streaming'}
                                   {category.value === 'other' && 'Other development tasks'}
                                 </div>
                               </button>
@@ -570,8 +623,7 @@ export default function DashboardPage() {
                             onChange={(e) => setTimeFormData({ ...timeFormData, description: e.target.value })}
                             className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
                             rows={4}
-                            placeholder="Provide a brief description of the work completed..."
-                            required
+                            placeholder="Provide a brief description of the work completed... (optional)"
                           />
                         </div>
 
@@ -593,7 +645,7 @@ export default function DashboardPage() {
                           </button>
                           <button
                             type="submit"
-                            disabled={submitting || !timeFormData.category || !timeFormData.hours || !timeFormData.description}
+                            disabled={submitting || !timeFormData.category || !timeFormData.hours}
                             className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {submitting ? 'Registering...' : 'Register Time'}

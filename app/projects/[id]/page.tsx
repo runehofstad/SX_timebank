@@ -21,12 +21,15 @@ import {
   XCircle,
   AlertCircle,
   Plus,
-  X
+  X,
+  FileDown
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { Dialog, Transition } from '@headlessui/react';
 import { WorkCategory } from '@/types';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Helper function to convert Firestore timestamps to Date
 const toDate = (timestamp: any): Date => {
@@ -50,6 +53,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [activeTab, setActiveTab] = useState<'overview' | 'timeentries' | 'team'>('overview');
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showTimebankModal, setShowTimebankModal] = useState(false);
+  const [showEditTimebankModal, setShowEditTimebankModal] = useState(false);
+  const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
   const [timeFormData, setTimeFormData] = useState({
     description: '',
     category: 'other' as WorkCategory,
@@ -62,10 +67,19 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
     
     return {
+      name: '',
+      description: '',
       totalHours: '',
       purchaseDate: format(today, 'yyyy-MM-dd'),
       expiryDate: format(oneYearLater, 'yyyy-MM-dd')
     };
+  });
+  const [editTimebankFormData, setEditTimebankFormData] = useState({
+    name: '',
+    description: '',
+    totalHours: '',
+    remainingHours: '',
+    expiryDate: ''
   });
   const [submitting, setSubmitting] = useState(false);
   
@@ -231,27 +245,53 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
     setSubmitting(true);
     try {
-      const totalHours = parseFloat(timebankFormData.totalHours);
+      const newHours = parseFloat(timebankFormData.totalHours);
       
-      // Count existing timebanks for this project's client to generate the number
-      const existingTimebankCount = timebanks.length;
-      const timebankNumber = existingTimebankCount + 1;
-      const generatedName = `${project.name} ${timebankNumber}`;
+      // Check if there's an existing active timebank for this client
+      const existingActiveTimebank = timebanks.find(tb => 
+        tb.clientId === project.clientId && tb.status === 'active'
+      );
       
-      const timebankData = {
-        clientId: project.clientId,
-        name: generatedName,
-        totalHours: totalHours,
-        usedHours: 0,
-        remainingHours: totalHours,
-        status: 'active',
-        purchaseDate: new Date(timebankFormData.purchaseDate),
-        expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      if (existingActiveTimebank) {
+        // Accumulate hours to existing timebank
+        const currentRemainingHours = existingActiveTimebank.remainingHours || 0;
+        const newRemainingHours = currentRemainingHours + newHours;
+        // New total is the new remaining hours (this becomes the new 100% baseline)
+        const newTotalHours = newRemainingHours;
+        
+        // Update the existing timebank
+        const timebankRef = doc(db, 'timebanks', existingActiveTimebank.id);
+        await updateDoc(timebankRef, {
+          totalHours: newTotalHours,
+          remainingHours: newRemainingHours,
+          usedHours: 0, // Reset to 0 as we have a new baseline
+          lastTopUpAmount: newHours,
+          lastTopUpDate: new Date(timebankFormData.purchaseDate),
+          expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
+          updatedAt: new Date()
+        });
+      } else {
+        // Create new timebank if none exists
+        const timebankName = timebankFormData.name.trim() || `${project.name} Timebank`;
+        
+        const timebankData = {
+          clientId: project.clientId,
+          name: timebankName,
+          description: timebankFormData.description.trim() || null,
+          totalHours: newHours,
+          usedHours: 0,
+          remainingHours: newHours,
+          lastTopUpAmount: newHours,
+          lastTopUpDate: new Date(timebankFormData.purchaseDate),
+          status: 'active',
+          purchaseDate: new Date(timebankFormData.purchaseDate),
+          expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
 
-      await addDoc(collection(db, 'timebanks'), timebankData);
+        await addDoc(collection(db, 'timebanks'), timebankData);
+      }
 
       // Reset form and refresh data
       const today = new Date();
@@ -259,6 +299,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
       
       setTimebankFormData({
+        name: '',
+        description: '',
         totalHours: '',
         purchaseDate: format(today, 'yyyy-MM-dd'),
         expiryDate: format(oneYearLater, 'yyyy-MM-dd')
@@ -271,6 +313,65 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditTimebank = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTimebank) return;
+
+    setSubmitting(true);
+    try {
+      const timebankRef = doc(db, 'timebanks', editingTimebank.id);
+      
+      const updateData: any = {
+        name: editTimebankFormData.name,
+        description: editTimebankFormData.description || null,
+        updatedAt: new Date()
+      };
+      
+      // Only update totalHours and remainingHours if they changed
+      const newTotalHours = parseFloat(editTimebankFormData.totalHours);
+      const newRemainingHours = parseFloat(editTimebankFormData.remainingHours);
+      
+      if (newTotalHours !== editingTimebank.totalHours) {
+        updateData.totalHours = newTotalHours;
+      }
+      
+      if (newRemainingHours !== editingTimebank.remainingHours) {
+        updateData.remainingHours = newRemainingHours;
+        // Recalculate used hours
+        updateData.usedHours = newTotalHours - newRemainingHours;
+      }
+      
+      if (editTimebankFormData.expiryDate) {
+        updateData.expiryDate = new Date(editTimebankFormData.expiryDate);
+      }
+      
+      await updateDoc(timebankRef, updateData);
+      
+      setShowEditTimebankModal(false);
+      setEditingTimebank(null);
+      await fetchProjectData();
+    } catch (error) {
+      console.error('Error updating timebank:', error);
+      alert('Failed to update timebank');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditTimebankModal = (timebank: Timebank) => {
+    setEditingTimebank(timebank);
+    setEditTimebankFormData({
+      name: timebank.name,
+      description: timebank.description || '',
+      totalHours: timebank.totalHours.toString(),
+      remainingHours: timebank.remainingHours.toString(),
+      expiryDate: timebank.expiryDate 
+        ? format(toDate(timebank.expiryDate), 'yyyy-MM-dd')
+        : ''
+    });
+    setShowEditTimebankModal(true);
   };
 
   const getStatusIcon = (status: Project['status']) => {
@@ -335,6 +436,132 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const pendingHours = timeEntries
     .filter(entry => entry.status === 'pending')
     .reduce((sum, entry) => sum + entry.hours, 0);
+
+  // Export to PDF function
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add logo/header
+    doc.setFontSize(20);
+    doc.setTextColor(255, 51, 102); // Studio X color (#FF3366)
+    doc.text('TIMEBANK', 14, 20);
+    
+    // Add project info
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text(project.name, 14, 35);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Client: ${client?.name || 'Unknown'}`, 14, 42);
+    doc.text(`Generated: ${format(new Date(), 'MMMM dd, yyyy')}`, 14, 48);
+    
+    // Add filter info if any filters are applied
+    let yPosition = 58;
+    if (filterPeriod !== 'all' || filterCategory !== 'all' || filterUser !== 'all' || filterDepartment !== 'all') {
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Applied Filters:', 14, yPosition);
+      yPosition += 6;
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      if (filterPeriod !== 'all') {
+        doc.text(`Period: ${filterPeriod}`, 14, yPosition);
+        yPosition += 5;
+      }
+      if (filterCategory !== 'all') {
+        const categoryLabel = workCategories.find(c => c.value === filterCategory)?.label || filterCategory;
+        doc.text(`Category: ${categoryLabel}`, 14, yPosition);
+        yPosition += 5;
+      }
+      if (filterUser !== 'all') {
+        const userName = teamMembers.find(m => m.id === filterUser)?.name || 'Unknown';
+        doc.text(`User: ${userName}`, 14, yPosition);
+        yPosition += 5;
+      }
+      if (filterDepartment !== 'all') {
+        const deptLabel = filterDepartment === 'studio_x' ? 'Studio X' : 'Developer Team';
+        doc.text(`Department: ${deptLabel}`, 14, yPosition);
+        yPosition += 5;
+      }
+      yPosition += 5;
+    }
+    
+    // Add summary statistics
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Summary:', 14, yPosition);
+    yPosition += 6;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    const filteredTotal = filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0);
+    const filteredApproved = filteredTimeEntries
+      .filter(entry => entry.status === 'approved')
+      .reduce((sum, entry) => sum + entry.hours, 0);
+    const filteredPending = filteredTimeEntries
+      .filter(entry => entry.status === 'pending')
+      .reduce((sum, entry) => sum + entry.hours, 0);
+    
+    doc.text(`Total Hours: ${formatHours(filteredTotal)}`, 14, yPosition);
+    yPosition += 5;
+    doc.text(`Approved: ${formatHours(filteredApproved)}`, 14, yPosition);
+    yPosition += 5;
+    doc.text(`Pending: ${formatHours(filteredPending)}`, 14, yPosition);
+    yPosition += 10;
+    
+    // Add time entries table
+    const tableColumns = ['Date', 'Category', 'Description', 'User', 'Hours', 'Status'];
+    const tableRows = filteredTimeEntries.map(entry => {
+      const user = teamMembers.find(m => m.id === entry.userId);
+      return [
+        entry.date ? format(toDate(entry.date), 'MMM dd, yyyy') : 'N/A',
+        getCategoryLabel(entry.category || 'other'),
+        entry.description || '',
+        user?.name || 'Unknown',
+        formatHours(entry.hours),
+        entry.status
+      ];
+    });
+    
+    // Add total row
+    tableRows.push([
+      'Total',
+      '',
+      '',
+      '',
+      formatHours(filteredTotal),
+      ''
+    ]);
+    
+    autoTable(doc, {
+      head: [tableColumns],
+      body: tableRows,
+      startY: yPosition,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [255, 51, 102], // Studio X color (#FF3366)
+        textColor: [255, 255, 255]
+      },
+      footStyles: {
+        fillColor: [240, 240, 240],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold'
+      },
+      didParseCell: function(data) {
+        // Style the total row
+        if (data.row.index === tableRows.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [240, 240, 240];
+        }
+      }
+    });
+    
+    // Save the PDF
+    const fileName = `${project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_timesheet_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+    doc.save(fileName);
+  };
 
   if (loading) {
     return (
@@ -406,7 +633,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Timebank
+                      {timebanks.some(tb => tb.status === 'active') ? 'Add Hours' : 'Add Timebank'}
                     </button>
                     <Link
                       href={`/projects/${project.id}/edit`}
@@ -538,27 +765,59 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         </div>
                       </div>
 
-                      {/* Individual Timebanks */}
-                      <h4 className="font-medium text-gray-700 mb-3">Individual Timebanks</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {timebanks.map((timebank) => {
+                      {/* Timebank Details */}
+                      <h4 className="font-medium text-gray-700 mb-3">Timebank Details</h4>
+                      <div className="space-y-4">
+                        {timebanks.filter(tb => tb.status === 'active').map((timebank) => {
                           const status = calculateTimebankStatus(timebank);
                           const percentageRemaining = ((timebank.totalHours - timebank.usedHours) / timebank.totalHours) * 100;
+                          
+                          // Check expiration
+                          let isExpiring = false;
+                          let daysUntilExpiry: number | null = null;
+                          if (timebank.expiryDate) {
+                            const expiryDate = timebank.expiryDate instanceof Date 
+                              ? timebank.expiryDate 
+                              : timebank.expiryDate.toDate();
+                            const today = new Date();
+                            daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                            isExpiring = daysUntilExpiry <= 30;
+                          }
                           
                           return (
                             <div key={timebank.id} className="border rounded-lg p-4">
                               <div className="flex justify-between items-start">
-                                <div>
+                                <div className="flex-1">
                                   <h4 className="font-medium text-gray-900">{timebank.name}</h4>
-                                  <p className="text-sm text-gray-500 mt-1">
+                                  {timebank.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{timebank.description}</p>
+                                  )}
+                                  <p className="text-sm text-gray-500 mt-2">
                                     {formatHours(timebank.remainingHours)} of {formatHours(timebank.totalHours)} hours remaining
                                   </p>
+                                  {timebank.lastTopUpDate && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Last top-up: {format(toDate(timebank.lastTopUpDate), 'MMM dd, yyyy')} 
+                                      {timebank.lastTopUpAmount && ` (+${formatHours(timebank.lastTopUpAmount)} hours)`}
+                                    </p>
+                                  )}
                                 </div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  timebank.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {timebank.status}
-                                </span>
+                                <div className="flex items-center space-x-2">
+                                  {userProfile?.role === 'admin' && (
+                                    <button
+                                      onClick={() => openEditTimebankModal(timebank)}
+                                      className="p-1.5 rounded-md text-gray-500 hover:text-studio-x hover:bg-gray-100 transition-colors"
+                                      title="Edit timebank"
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    timebank.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {timebank.status}
+                                  </span>
+                                </div>
                               </div>
                               <div className="mt-3">
                                 <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -567,17 +826,50 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                     style={{ width: `${(timebank.usedHours / timebank.totalHours) * 100}%` }}
                                   />
                                 </div>
-                                <p className={`text-xs mt-1 font-medium ${
-                                  status === 'green' ? 'text-green-600' : 
-                                  status === 'yellow' ? 'text-yellow-600' : 
-                                  'text-red-600'
-                                }`}>
-                                  {percentageRemaining.toFixed(0)}% remaining
-                                </p>
+                                <div className="flex justify-between items-center mt-1">
+                                  <p className={`text-xs font-medium ${
+                                    status === 'green' ? 'text-green-600' : 
+                                    status === 'yellow' ? 'text-yellow-600' : 
+                                    'text-red-600'
+                                  }`}>
+                                    {percentageRemaining.toFixed(0)}% remaining
+                                  </p>
+                                  {isExpiring && daysUntilExpiry !== null && (
+                                    <p className="text-xs font-medium text-orange-600">
+                                      {daysUntilExpiry <= 0 
+                                        ? 'Expired!' 
+                                        : daysUntilExpiry === 1 
+                                          ? 'Expires tomorrow!' 
+                                          : `Expires in ${daysUntilExpiry} days`}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
                         })}
+                        
+                        {/* Show inactive/expired timebanks separately */}
+                        {timebanks.filter(tb => tb.status !== 'active').length > 0 && (
+                          <>
+                            <h4 className="font-medium text-gray-500 mt-6 mb-2">Previous Timebanks</h4>
+                            <div className="space-y-2">
+                              {timebanks.filter(tb => tb.status !== 'active').map((timebank) => (
+                                <div key={timebank.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                  <div className="flex justify-between items-center">
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-600">{timebank.name}</p>
+                                      <p className="text-xs text-gray-500">
+                                        Used {formatHours(timebank.usedHours)} of {formatHours(timebank.totalHours)} hours
+                                      </p>
+                                    </div>
+                                    <span className="text-xs text-gray-500">{timebank.status}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </>
                   ) : (
@@ -656,6 +948,16 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       <option value="studio_x">Studio X</option>
                       <option value="developer_team">Developer Team</option>
                     </select>
+
+                    {/* Export PDF Button */}
+                    <button
+                      onClick={exportToPDF}
+                      className="inline-flex items-center px-4 py-2 bg-studio-x text-white rounded-md hover:bg-studio-x-600 transition-colors text-sm font-medium"
+                      disabled={filteredTimeEntries.length === 0}
+                    >
+                      <FileDown className="h-4 w-4 mr-2" />
+                      Export PDF
+                    </button>
                   </div>
                 </div>
 
@@ -719,6 +1021,17 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           );
                         })}
                       </tbody>
+                      <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+                        <tr>
+                          <td colSpan={4} className="px-6 py-4 text-sm font-medium text-gray-900 text-right">
+                            Total Hours:
+                          </td>
+                          <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                            {formatHours(filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0))}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 ) : (
@@ -863,6 +1176,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                   {category.value === 'backend_development' && 'Server, API, database work'}
                                   {category.value === 'frontend_development' && 'Web interface development'}
                                   {category.value === 'testing' && 'QA, testing, bug verification'}
+                                  {category.value === 'video_production' && 'Editing, Recording and streaming'}
                                   {category.value === 'other' && 'Other development tasks'}
                                 </div>
                               </button>
@@ -910,8 +1224,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             onChange={(e) => setTimeFormData({ ...timeFormData, description: e.target.value })}
                             className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
                             rows={4}
-                            placeholder="Provide a brief description of the work completed..."
-                            required
+                            placeholder="Provide a brief description of the work completed... (optional)"
                           />
                         </div>
 
@@ -925,7 +1238,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </button>
                           <button
                             type="submit"
-                            disabled={submitting || !timeFormData.category || !timeFormData.hours || !timeFormData.description}
+                            disabled={submitting || !timeFormData.category || !timeFormData.hours}
                             className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {submitting ? 'Registering...' : 'Register Time'}
@@ -965,29 +1278,56 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
                       <Dialog.Title
                         as="h3"
-                        className="text-lg font-medium leading-6 text-gray-900 flex justify-between items-center"
+                        className="text-2xl font-semibold leading-6 text-gray-900 flex justify-between items-center mb-2"
                       >
-                        Add Timebank
+                        {timebanks.some(tb => tb.status === 'active') ? 'Add Hours to Timebank' : 'Add Timebank'}
                         <button
                           onClick={() => setShowTimebankModal(false)}
                           className="text-gray-400 hover:text-gray-500"
                         >
-                          <X className="h-5 w-5" />
+                          <X className="h-6 w-6" />
                         </button>
                       </Dialog.Title>
+                      <p className="text-sm text-gray-600 mb-6">
+                        {timebanks.some(tb => tb.status === 'active') 
+                          ? `Add more hours to the existing timebank for ${project.name}`
+                          : `Create a new timebank for ${project.name}`}
+                      </p>
 
-                      <form onSubmit={handleCreateTimebank} className="mt-4 space-y-4">
-                        <div className="bg-gray-50 p-3 rounded-md">
-                          <p className="text-sm text-gray-600">
-                            Timebank name will be: <span className="font-medium text-gray-900">{project.name} {timebanks.length + 1}</span>
-                          </p>
+                      <form onSubmit={handleCreateTimebank} className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Timebank Name
+                          </label>
+                          <input
+                            type="text"
+                            value={timebankFormData.name}
+                            onChange={(e) => setTimebankFormData({ ...timebankFormData, name: e.target.value })}
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            placeholder={`e.g., ${project.name} ${timebanks.length + 1}`}
+                          />
+                          <p className="mt-1 text-xs text-gray-500">Leave blank to auto-generate: "{project.name} {timebanks.length + 1}"</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Description <span className="text-gray-500 font-normal">(optional)</span>
+                          </label>
+                          <textarea
+                            value={timebankFormData.description}
+                            onChange={(e) => setTimebankFormData({ ...timebankFormData, description: e.target.value })}
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            rows={3}
+                            placeholder="Add any notes or details about this timebank..."
+                          />
                         </div>
                         
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <Clock className="inline h-4 w-4 mr-1" />
                             Total Hours
                           </label>
                           <input
@@ -996,64 +1336,229 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             min="1"
                             value={timebankFormData.totalHours}
                             onChange={(e) => setTimebankFormData({ ...timebankFormData, totalHours: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
                             placeholder="e.g., 100"
                             required
                           />
+                          <p className="mt-1 text-xs text-blue-700">The total number of hours available in this timebank</p>
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">
-                            Purchase Date
-                          </label>
-                          <input
-                            type="date"
-                            value={timebankFormData.purchaseDate}
-                            onChange={(e) => {
-                              const newPurchaseDate = e.target.value;
-                              const purchaseDate = new Date(newPurchaseDate);
-                              const expiryDate = new Date(purchaseDate);
-                              expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-                              
-                              setTimebankFormData({ 
-                                ...timebankFormData, 
-                                purchaseDate: newPurchaseDate,
-                                expiryDate: format(expiryDate, 'yyyy-MM-dd')
-                              });
-                            }}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm text-gray-900 bg-white"
-                            required
-                          />
-                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <Calendar className="inline h-4 w-4 mr-1" />
+                              Purchase Date
+                            </label>
+                            <input
+                              type="date"
+                              value={timebankFormData.purchaseDate}
+                              onChange={(e) => {
+                                const newPurchaseDate = e.target.value;
+                                const purchaseDate = new Date(newPurchaseDate);
+                                const expiryDate = new Date(purchaseDate);
+                                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                                
+                                setTimebankFormData({ 
+                                  ...timebankFormData, 
+                                  purchaseDate: newPurchaseDate,
+                                  expiryDate: format(expiryDate, 'yyyy-MM-dd')
+                                });
+                              }}
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              required
+                            />
+                          </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">
-                            Expiry Date
-                          </label>
-                          <input
-                            type="date"
-                            value={timebankFormData.expiryDate}
-                            onChange={(e) => setTimebankFormData({ ...timebankFormData, expiryDate: e.target.value })}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm text-gray-900 bg-white"
-                            required
-                          />
-                          <p className="mt-1 text-xs text-gray-500">Automatically set to 1 year from purchase date, but can be edited</p>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <AlertCircle className="inline h-4 w-4 mr-1" />
+                              Expiry Date
+                            </label>
+                            <input
+                              type="date"
+                              value={timebankFormData.expiryDate}
+                              onChange={(e) => setTimebankFormData({ ...timebankFormData, expiryDate: e.target.value })}
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              required
+                            />
+                          </div>
                         </div>
+                        <p className="text-xs text-gray-500 -mt-4">Expiry date is automatically set to 1 year from purchase date, but can be edited</p>
 
-                        <div className="mt-6 flex justify-end space-x-3">
+                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t">
                           <button
                             type="button"
                             onClick={() => setShowTimebankModal(false)}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
+                            className="px-6 py-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x transition-colors"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
                             disabled={submitting}
-                            className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                            className="px-6 py-3 text-base font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {submitting ? 'Creating...' : 'Create Timebank'}
+                          </button>
+                        </div>
+                      </form>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+
+          {/* Edit Timebank Modal */}
+          <Transition appear show={showEditTimebankModal} as={Fragment}>
+            <Dialog as="div" className="relative z-10" onClose={() => setShowEditTimebankModal(false)}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-25" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-2xl font-semibold leading-6 text-gray-900 flex justify-between items-center mb-2"
+                      >
+                        Edit Timebank
+                        <button
+                          onClick={() => setShowEditTimebankModal(false)}
+                          className="text-gray-400 hover:text-gray-500"
+                        >
+                          <X className="h-6 w-6" />
+                        </button>
+                      </Dialog.Title>
+                      <p className="text-sm text-gray-600 mb-6">Update timebank details for {editingTimebank?.name}</p>
+
+                      <form onSubmit={handleEditTimebank} className="space-y-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Timebank Name
+                          </label>
+                          <input
+                            type="text"
+                            value={editTimebankFormData.name}
+                            onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, name: e.target.value })}
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Description <span className="text-gray-500 font-normal">(optional)</span>
+                          </label>
+                          <textarea
+                            value={editTimebankFormData.description}
+                            onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, description: e.target.value })}
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            rows={3}
+                            placeholder="Add any notes or details about this timebank..."
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <Clock className="inline h-4 w-4 mr-1" />
+                              Total Hours
+                            </label>
+                            <input
+                              type="number"
+                              step="0.5"
+                              min="0.1"
+                              value={editTimebankFormData.totalHours}
+                              onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, totalHours: e.target.value })}
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
+                              required
+                            />
+                            <p className="mt-1 text-xs text-blue-700">Total hours in this timebank</p>
+                          </div>
+
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <Clock className="inline h-4 w-4 mr-1" />
+                              Remaining Hours
+                            </label>
+                            <input
+                              type="number"
+                              step="0.5"
+                              min="0"
+                              max={editTimebankFormData.totalHours}
+                              value={editTimebankFormData.remainingHours}
+                              onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, remainingHours: e.target.value })}
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
+                              required
+                            />
+                            <p className="mt-1 text-xs text-green-700">Hours still available</p>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <AlertCircle className="inline h-4 w-4 mr-1" />
+                            Expiry Date
+                          </label>
+                          <input
+                            type="date"
+                            value={editTimebankFormData.expiryDate}
+                            onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, expiryDate: e.target.value })}
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                          />
+                          <p className="mt-1 text-xs text-gray-500">Leave empty if no expiry date</p>
+                        </div>
+
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                          <div className="flex items-start">
+                            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
+                            <div className="text-sm text-yellow-800">
+                              <p className="font-medium">Important Notes:</p>
+                              <ul className="mt-1 list-disc list-inside space-y-1">
+                                <li>Changing total hours will affect percentage calculations</li>
+                                <li>Remaining hours cannot exceed total hours</li>
+                                <li>Used hours will be automatically recalculated</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowEditTimebankModal(false);
+                              setEditingTimebank(null);
+                            }}
+                            className="px-6 py-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={submitting}
+                            className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {submitting ? 'Saving...' : 'Save Changes'}
                           </button>
                         </div>
                       </form>

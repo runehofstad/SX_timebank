@@ -72,6 +72,7 @@ export type WorkCategory =
   | 'backend_development'
   | 'frontend_development'
   | 'testing'
+  | 'video_production'
   | 'other';
 
 export interface EmailNotification {
