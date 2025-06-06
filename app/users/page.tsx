@@ -6,20 +6,26 @@ import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
-import { User } from '@/types';
+import { User, Department } from '@/types';
 import { Plus, Edit2, Trash2, X, Mail, UserPlus } from 'lucide-react';
 
 export default function UsersPage() {
   const { userProfile } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editData, setEditData] = useState({
+    name: '',
+    role: 'developer' as User['role'],
+    department: 'developer_team' as Department | undefined,
+  });
   const [inviteData, setInviteData] = useState({
     email: '',
     name: '',
     role: 'developer' as User['role'],
+    department: 'developer_team' as Department,
   });
 
   useEffect(() => {
@@ -58,6 +64,7 @@ export default function UsersPage() {
         email: inviteData.email,
         name: inviteData.name,
         role: inviteData.role,
+        department: inviteData.department,
         invitedBy: userProfile?.id,
         invitedAt: new Date(),
         status: 'pending',
@@ -74,6 +81,7 @@ export default function UsersPage() {
             email: inviteData.email,
             name: inviteData.name,
             role: inviteData.role,
+            department: inviteData.department,
             token,
             inviterName: userProfile?.name,
           }),
@@ -97,6 +105,7 @@ export default function UsersPage() {
         email: '',
         name: '',
         role: 'developer',
+        department: 'developer_team',
       });
       setShowInviteModal(false);
     } catch (error: any) {
@@ -109,15 +118,34 @@ export default function UsersPage() {
     }
   };
 
-  const handleUpdateRole = async (userId: string, newRole: User['role']) => {
+  const handleEditClick = (user: User) => {
+    setEditingUser(user);
+    setEditData({
+      name: user.name,
+      role: user.role,
+      department: user.department,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
     try {
-      await updateDoc(doc(db, 'users', userId), {
-        role: newRole,
+      await updateDoc(doc(db, 'users', editingUser.id), {
+        name: editData.name,
+        role: editData.role,
+        department: editData.department,
         updatedAt: new Date(),
       });
+      
+      setShowEditModal(false);
+      setEditingUser(null);
       await fetchUsers();
     } catch (error) {
-      console.error('Error updating user role:', error);
+      console.error('Error updating user:', error);
+      alert('Failed to update user');
     }
   };
 
@@ -186,27 +214,34 @@ export default function UsersPage() {
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{user.name}</div>
                           <div className="text-sm text-gray-500">{user.email}</div>
+                          {user.department && (
+                            <div className="text-xs text-gray-400 mt-1">
+                              {user.department === 'studio_x' ? 'Studio X' : 'Developer Team'}
+                            </div>
+                          )}
                         </div>
                       </div>
                       
                       <div className="flex items-center space-x-4">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleUpdateRole(user.id, e.target.value as User['role'])}
-                          disabled={user.id === userProfile?.id}
-                          className={`text-sm rounded-full px-3 py-1 font-medium ${getRoleBadgeColor(user.role)} ${
-                            user.id === userProfile?.id ? 'opacity-50 cursor-not-allowed' : ''
-                          } border border-gray-300`}
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(user.role)}`}>
+                          {user.role === 'admin' ? 'Admin' : 
+                           user.role === 'project_manager' ? 'Project Manager' : 
+                           'Developer'}
+                        </span>
+                        
+                        <button
+                          onClick={() => handleEditClick(user)}
+                          className="text-studio-x hover:text-studio-x-600"
+                          title="Edit user"
                         >
-                          <option value="admin">Admin</option>
-                          <option value="project_manager">Project Manager</option>
-                          <option value="developer">Developer</option>
-                        </select>
+                          <Edit2 className="h-5 w-5" />
+                        </button>
                         
                         {user.id !== userProfile?.id && (
                           <button
                             onClick={() => handleDelete(user.id)}
                             className="text-red-600 hover:text-red-900"
+                            title="Delete user"
                           >
                             <Trash2 className="h-5 w-5" />
                           </button>
@@ -288,6 +323,22 @@ export default function UsersPage() {
                             <option value="admin">Admin</option>
                           </select>
                         </div>
+                        
+                        <div>
+                          <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                            Department
+                          </label>
+                          <select
+                            name="department"
+                            id="department"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            value={inviteData.department}
+                            onChange={(e) => setInviteData({ ...inviteData, department: e.target.value as Department })}
+                          >
+                            <option value="studio_x">Studio X</option>
+                            <option value="developer_team">Developer Team</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                     
@@ -302,6 +353,114 @@ export default function UsersPage() {
                       <button
                         type="button"
                         onClick={() => setShowInviteModal(false)}
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Edit User Modal */}
+          {showEditModal && editingUser && (
+            <div className="fixed z-10 inset-0 overflow-y-auto">
+              <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowEditModal(false)} />
+                
+                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                  <form onSubmit={handleUpdateUser}>
+                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                          Edit User
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowEditModal(false)}
+                          className="text-gray-400 hover:text-gray-500"
+                        >
+                          <X className="h-6 w-6" />
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={editingUser.email}
+                            disabled
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 sm:text-sm"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            id="edit-name"
+                            required
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            value={editData.name}
+                            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="edit-role" className="block text-sm font-medium text-gray-700">
+                            Role
+                          </label>
+                          <select
+                            id="edit-role"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            value={editData.role}
+                            onChange={(e) => setEditData({ ...editData, role: e.target.value as User['role'] })}
+                            disabled={editingUser.id === userProfile?.id}
+                          >
+                            <option value="developer">Developer</option>
+                            <option value="project_manager">Project Manager</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          {editingUser.id === userProfile?.id && (
+                            <p className="mt-1 text-xs text-gray-500">You cannot change your own role</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="edit-department" className="block text-sm font-medium text-gray-700">
+                            Department
+                          </label>
+                          <select
+                            id="edit-department"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            value={editData.department || ''}
+                            onChange={(e) => setEditData({ ...editData, department: (e.target.value || undefined) as Department | undefined })}
+                          >
+                            <option value="">No Department</option>
+                            <option value="studio_x">Studio X</option>
+                            <option value="developer_team">Developer Team</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                      <button
+                        type="submit"
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
+                      >
+                        Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowEditModal(false)}
                         className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Cancel

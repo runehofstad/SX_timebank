@@ -1,8 +1,11 @@
+export type Department = 'studio_x' | 'developer_team';
+
 export interface User {
   id: string;
   email: string;
   name: string;
   role: 'admin' | 'project_manager' | 'developer';
+  department?: Department;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,6 +98,7 @@ export interface Invitation {
   email: string;
   name: string;
   role: User['role'];
+  department?: Department;
   invitedBy: string;
   invitedAt: Date;
   status: 'pending' | 'accepted' | 'expired';

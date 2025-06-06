@@ -71,6 +71,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
         email: invitation.email,
         name: invitation.name,
         role: invitation.role,
+        department: invitation.department,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

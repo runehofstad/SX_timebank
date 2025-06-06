@@ -23,7 +23,7 @@ import {
   Plus,
   X
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { Dialog, Transition } from '@headlessui/react';
 import { WorkCategory } from '@/types';
@@ -68,6 +68,12 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     };
   });
   const [submitting, setSubmitting] = useState(false);
+  
+  // Filter states
+  const [filterPeriod, setFilterPeriod] = useState('all');
+  const [filterCategory, setFilterCategory] = useState<WorkCategory | 'all'>('all');
+  const [filterUser, setFilterUser] = useState<string>('all');
+  const [filterDepartment, setFilterDepartment] = useState<string>('all');
 
   useEffect(() => {
     if (params.id) {
@@ -281,6 +287,46 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         return null;
     }
   };
+
+  // Get unique periods from time entries
+  const getUniquePeriods = () => {
+    const periods = new Set<string>();
+    timeEntries.forEach(entry => {
+      if (entry.date) {
+        const date = toDate(entry.date);
+        periods.add(format(date, 'MMMM yyyy'));
+      }
+    });
+    return Array.from(periods).sort((a, b) => {
+      const dateA = parse(a, 'MMMM yyyy', new Date());
+      const dateB = parse(b, 'MMMM yyyy', new Date());
+      return dateB.getTime() - dateA.getTime();
+    });
+  };
+
+  // Filter time entries
+  const filteredTimeEntries = timeEntries.filter(entry => {
+    // Period filter
+    if (filterPeriod !== 'all' && entry.date) {
+      const entryDate = toDate(entry.date);
+      const entryPeriod = format(entryDate, 'MMMM yyyy');
+      if (entryPeriod !== filterPeriod) return false;
+    }
+
+    // Category filter
+    if (filterCategory !== 'all' && entry.category !== filterCategory) return false;
+
+    // User filter
+    if (filterUser !== 'all' && entry.userId !== filterUser) return false;
+
+    // Department filter
+    if (filterDepartment !== 'all') {
+      const user = teamMembers.find(m => m.id === entry.userId);
+      if (!user || user.department !== filterDepartment) return false;
+    }
+
+    return true;
+  });
 
   const totalHours = timeEntries.reduce((sum, entry) => sum + entry.hours, 0);
   const approvedHours = timeEntries
@@ -557,8 +603,63 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
             {activeTab === 'timeentries' && (
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Time Entries</h3>
-                {timeEntries.length > 0 ? (
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 sm:mb-0">Time Entries</h3>
+                  
+                  {/* Filters */}
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {/* Period Filter */}
+                    <select
+                      value={filterPeriod}
+                      onChange={(e) => setFilterPeriod(e.target.value)}
+                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                    >
+                      <option value="all">All Periods</option>
+                      {getUniquePeriods().map(period => (
+                        <option key={period} value={period}>{period}</option>
+                      ))}
+                    </select>
+
+                    {/* Category Filter */}
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => setFilterCategory(e.target.value as WorkCategory | 'all')}
+                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                    >
+                      <option value="all">All Categories</option>
+                      {workCategories.map(category => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* User Filter */}
+                    <select
+                      value={filterUser}
+                      onChange={(e) => setFilterUser(e.target.value)}
+                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                    >
+                      <option value="all">All Users</option>
+                      {teamMembers.map(member => (
+                        <option key={member.id} value={member.id}>{member.name}</option>
+                      ))}
+                    </select>
+
+                    {/* Department Filter */}
+                    <select
+                      value={filterDepartment}
+                      onChange={(e) => setFilterDepartment(e.target.value)}
+                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                    >
+                      <option value="all">All Departments</option>
+                      <option value="studio_x">Studio X</option>
+                      <option value="developer_team">Developer Team</option>
+                    </select>
+                  </div>
+                </div>
+
+                {filteredTimeEntries.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -584,7 +685,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {timeEntries.map((entry) => {
+                        {filteredTimeEntries.map((entry) => {
                           const user = teamMembers.find(m => m.id === entry.userId);
                           return (
                             <tr key={entry.id}>
@@ -621,7 +722,26 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     </table>
                   </div>
                 ) : (
-                  <p className="text-gray-500">No time entries recorded yet</p>
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">
+                      {timeEntries.length === 0 
+                        ? 'No time entries recorded yet' 
+                        : 'No time entries match the selected filters'}
+                    </p>
+                    {timeEntries.length > 0 && (
+                      <button
+                        onClick={() => {
+                          setFilterPeriod('all');
+                          setFilterCategory('all');
+                          setFilterUser('all');
+                          setFilterDepartment('all');
+                        }}
+                        className="mt-2 text-sm text-studio-x hover:text-studio-x-600"
+                      >
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
