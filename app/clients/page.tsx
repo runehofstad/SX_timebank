@@ -181,28 +181,28 @@ export default function ClientsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Clients</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Clients</h1>
             <div className="flex items-center space-x-3">
               {/* Filter Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-border text-sm font-medium rounded-md text-gray-700 dark:text-foreground bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x"
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </button>
                 
                 {showFilterDropdown && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                  <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-card ring-1 ring-black dark:ring-gray-700 ring-opacity-5 z-10">
                     <div className="py-1" role="menu">
                       <button
                         onClick={() => {
                           setFilterType('alphabetic');
                           setShowFilterDropdown(false);
                         }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                          filterType === 'alphabetic' ? 'text-studio-x bg-studio-x-50' : 'text-gray-700'
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-secondary flex items-center ${
+                          filterType === 'alphabetic' ? 'text-studio-x bg-studio-x-50 dark:bg-studio-x/10' : 'text-gray-700 dark:text-foreground'
                         }`}
                       >
                         <ArrowUpDown className="h-4 w-4 mr-2" />
@@ -213,8 +213,8 @@ export default function ClientsPage() {
                           setFilterType('balance-low-high');
                           setShowFilterDropdown(false);
                         }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                          filterType === 'balance-low-high' ? 'text-studio-x bg-studio-x-50' : 'text-gray-700'
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-secondary flex items-center ${
+                          filterType === 'balance-low-high' ? 'text-studio-x bg-studio-x-50 dark:bg-studio-x/10' : 'text-gray-700 dark:text-foreground'
                         }`}
                       >
                         <DollarSign className="h-4 w-4 mr-2" />
@@ -225,8 +225,8 @@ export default function ClientsPage() {
                           setFilterType('balance-high-low');
                           setShowFilterDropdown(false);
                         }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                          filterType === 'balance-high-low' ? 'text-studio-x bg-studio-x-50' : 'text-gray-700'
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-secondary flex items-center ${
+                          filterType === 'balance-high-low' ? 'text-studio-x bg-studio-x-50 dark:bg-studio-x/10' : 'text-gray-700 dark:text-foreground'
                         }`}
                       >
                         <DollarSign className="h-4 w-4 mr-2" />
@@ -237,8 +237,8 @@ export default function ClientsPage() {
                           setFilterType('activity');
                           setShowFilterDropdown(false);
                         }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center ${
-                          filterType === 'activity' ? 'text-studio-x bg-studio-x-50' : 'text-gray-700'
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-secondary flex items-center ${
+                          filterType === 'activity' ? 'text-studio-x bg-studio-x-50 dark:bg-studio-x/10' : 'text-gray-700 dark:text-foreground'
                         }`}
                       >
                         <Activity className="h-4 w-4 mr-2" />
@@ -264,8 +264,8 @@ export default function ClientsPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-studio-x"></div>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="bg-white dark:bg-card shadow dark:shadow-gray-800 overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredClients.map((client) => (
                   <li key={client.id}>
                     <div className="px-4 py-4 flex items-center sm:px-6">
@@ -275,7 +275,7 @@ export default function ClientsPage() {
                             <p className="font-medium text-studio-x truncate">{client.name}</p>
                           </div>
                           <div className="mt-2 flex">
-                            <div className="flex items-center text-sm text-gray-500">
+                            <div className="flex items-center text-sm text-gray-500 dark:text-muted-foreground">
                               <p>{client.email}</p>
                               {client.phone && (
                                 <>
@@ -289,7 +289,7 @@ export default function ClientsPage() {
                             <div className="mt-2 flex items-center space-x-4 text-sm">
                               {client.totalBalance !== undefined && (
                                 <div className="flex items-center">
-                                  <span className="text-gray-500">Balance:</span>
+                                  <span className="text-gray-500 dark:text-muted-foreground">Balance:</span>
                                   <span className={`ml-1 font-medium ${
                                     client.totalBalance > 0 ? 'text-green-600' : 'text-gray-600'
                                   }`}>
@@ -298,7 +298,7 @@ export default function ClientsPage() {
                                 </div>
                               )}
                               {client.lastActivity && (
-                                <div className="flex items-center text-gray-500">
+                                <div className="flex items-center text-gray-500 dark:text-muted-foreground">
                                   <span>Last activity:</span>
                                   <span className="ml-1">
                                     {new Date(client.lastActivity).toLocaleDateString()}
@@ -328,7 +328,7 @@ export default function ClientsPage() {
                 ))}
               </ul>
               {filteredClients.length === 0 && !loading && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-muted-foreground">
                   No clients found
                 </div>
               )}
@@ -339,19 +339,19 @@ export default function ClientsPage() {
           {showModal && (
             <div className="fixed z-10 inset-0 overflow-y-auto">
               <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={resetForm} />
+                <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" onClick={resetForm} />
                 
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="inline-block align-bottom bg-white dark:bg-card rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <form onSubmit={handleSubmit}>
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="bg-white dark:bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
                           {editingClient ? 'Edit Client' : 'Add New Client'}
                         </h3>
                         <button
                           type="button"
                           onClick={resetForm}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
@@ -359,7 +359,7 @@ export default function ClientsPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Name
                           </label>
                           <input
@@ -367,14 +367,14 @@ export default function ClientsPage() {
                             name="name"
                             id="name"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Email
                           </label>
                           <input
@@ -382,35 +382,35 @@ export default function ClientsPage() {
                             name="email"
                             id="email"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Phone (optional)
                           </label>
                           <input
                             type="tel"
                             name="phone"
                             id="phone"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Address (optional)
                           </label>
                           <textarea
                             name="address"
                             id="address"
                             rows={3}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                             value={formData.address}
                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                           />
@@ -418,7 +418,7 @@ export default function ClientsPage() {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div className="bg-gray-50 dark:bg-secondary px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                       <button
                         type="submit"
                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
@@ -428,7 +428,7 @@ export default function ClientsPage() {
                       <button
                         type="button"
                         onClick={resetForm}
-                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-card text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Cancel
                       </button>

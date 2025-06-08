@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
-import { Save, Mail, Bell, Globe } from 'lucide-react';
+import { Save, Mail, Bell, Globe, Moon, Sun } from 'lucide-react';
 
 interface SystemSettings {
   companyName: string;
@@ -33,6 +34,7 @@ interface SystemSettings {
 
 export default function SettingsPage() {
   const { userProfile } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [settings, setSettings] = useState<SystemSettings>({
     companyName: '',
     companyEmail: '',
@@ -120,7 +122,7 @@ export default function SettingsPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Settings</h1>
             <button
               onClick={handleSave}
               disabled={saving}
@@ -131,46 +133,72 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <div className="bg-white shadow rounded-lg">
+          <div className="bg-white dark:bg-card shadow rounded-lg">
+            {/* Theme Settings */}
+            <div className="px-4 py-5 sm:p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground flex items-center">
+                {theme === 'light' ? <Sun className="h-5 w-5 mr-2" /> : <Moon className="h-5 w-5 mr-2" />}
+                Appearance
+              </h3>
+              <div className="mt-6">
+                <div className="flex items-center justify-between max-w-md">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-foreground">Theme</p>
+                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Choose between light and dark mode</p>
+                  </div>
+                  <button
+                    onClick={toggleTheme}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-studio-x focus:ring-offset-2"
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* Company Information */}
-            <div className="px-4 py-5 sm:p-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+            <div className="px-4 py-5 sm:p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground flex items-center">
                 <Globe className="h-5 w-5 mr-2" />
                 Company Information
               </h3>
               <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                     value={settings.companyName}
                     onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Email</label>
                   <input
                     type="email"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                     value={settings.companyEmail}
                     onChange={(e) => setSettings({ ...settings, companyEmail: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Phone</label>
                   <input
                     type="tel"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                     value={settings.companyPhone}
                     onChange={(e) => setSettings({ ...settings, companyPhone: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Company Address</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Address</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                     value={settings.companyAddress}
                     onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
                   />
@@ -179,8 +207,8 @@ export default function SettingsPage() {
             </div>
 
             {/* Email Notifications */}
-            <div className="px-4 py-5 sm:p-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+            <div className="px-4 py-5 sm:p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground flex items-center">
                 <Mail className="h-5 w-5 mr-2" />
                 Email Notifications
               </h3>
@@ -188,38 +216,38 @@ export default function SettingsPage() {
                 <div className="flex items-center">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 rounded"
+                    className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 dark:border-gray-600 rounded"
                     checked={settings.emailNotifications}
                     onChange={(e) => setSettings({ ...settings, emailNotifications: e.target.checked })}
                   />
-                  <label className="ml-2 block text-sm text-gray-900">
+                  <label className="ml-2 block text-sm text-gray-900 dark:text-foreground">
                     Enable email notifications
                   </label>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Low Hours Warning (%)
                     </label>
                     <input
                       type="number"
                       min="0"
                       max="100"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                       value={settings.lowHoursThreshold}
                       onChange={(e) => setSettings({ ...settings, lowHoursThreshold: parseInt(e.target.value) })}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Critical Hours Warning (%)
                     </label>
                     <input
                       type="number"
                       min="0"
                       max="100"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                       value={settings.criticalHoursThreshold}
                       onChange={(e) => setSettings({ ...settings, criticalHoursThreshold: parseInt(e.target.value) })}
                     />
@@ -227,14 +255,14 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Additional Notification Recipients
                   </label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="email"
                       placeholder="Enter email address"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                     />
@@ -248,7 +276,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-1">
                     {settings.notificationEmails.map((email) => (
-                      <div key={email} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded">
+                      <div key={email} className="flex items-center justify-between bg-gray-50 dark:bg-secondary px-3 py-2 rounded">
                         <span className="text-sm">{email}</span>
                         <button
                           onClick={() => removeNotificationEmail(email)}
@@ -265,19 +293,19 @@ export default function SettingsPage() {
 
             {/* Timebank Settings */}
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground flex items-center">
                 <Bell className="h-5 w-5 mr-2" />
                 Timebank Settings
               </h3>
               <div className="mt-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Default Timebank Expiry (days)
                   </label>
                   <input
                     type="number"
                     min="0"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm sm:max-w-xs text-gray-900"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm sm:max-w-xs text-gray-900 dark:text-foreground"
                     value={settings.defaultTimebankExpiry}
                     onChange={(e) => setSettings({ ...settings, defaultTimebankExpiry: parseInt(e.target.value) })}
                   />
@@ -287,11 +315,11 @@ export default function SettingsPage() {
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 rounded"
+                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 dark:border-gray-600 rounded"
                       checked={settings.allowNegativeBalance}
                       onChange={(e) => setSettings({ ...settings, allowNegativeBalance: e.target.checked })}
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label className="ml-2 block text-sm text-gray-900 dark:text-foreground">
                       Allow negative timebank balance
                     </label>
                   </div>
@@ -299,11 +327,11 @@ export default function SettingsPage() {
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 rounded"
+                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 dark:border-gray-600 rounded"
                       checked={settings.requireApprovalForTimeEntries}
                       onChange={(e) => setSettings({ ...settings, requireApprovalForTimeEntries: e.target.checked })}
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label className="ml-2 block text-sm text-gray-900 dark:text-foreground">
                       Require approval for time entries
                     </label>
                   </div>
@@ -311,11 +339,11 @@ export default function SettingsPage() {
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 rounded"
+                      className="h-4 w-4 text-studio-x focus:ring-studio-x border-gray-300 dark:border-gray-600 rounded"
                       checked={settings.enableClientPortal}
                       onChange={(e) => setSettings({ ...settings, enableClientPortal: e.target.checked })}
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label className="ml-2 block text-sm text-gray-900 dark:text-foreground">
                       Enable client portal
                     </label>
                   </div>

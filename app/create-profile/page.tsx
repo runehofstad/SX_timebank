@@ -71,9 +71,9 @@ export default function CreateProfilePage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Not logged in</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-foreground">Not logged in</h2>
           <a href="/login" className="mt-4 text-blue-600 hover:text-blue-500">
             Go to login
           </a>
@@ -86,10 +86,10 @@ export default function CreateProfilePage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-foreground">
             Create User Profile
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-600 dark:text-muted-foreground">
             Your account exists but is missing a user profile
           </p>
         </div>
@@ -111,7 +111,7 @@ export default function CreateProfilePage() {
             {profileExists === false && (
               <>
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Your Name
                   </label>
                   <input
@@ -136,7 +136,7 @@ export default function CreateProfilePage() {
             
             {profileExists === true && (
               <div className="bg-green-50 p-4 rounded">
-                <p className="text-green-800">✓ Profile already exists!</p>
+                <p className="text-green-800 dark:text-green-200">✓ Profile already exists!</p>
                 <a href="/dashboard" className="mt-2 inline-block text-blue-600 hover:text-blue-500">
                   Go to Dashboard
                 </a>

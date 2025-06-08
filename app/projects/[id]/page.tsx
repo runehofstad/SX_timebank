@@ -580,7 +580,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       <ProtectedRoute>
         <DashboardLayout>
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900">Project not found</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Project not found</h2>
             <Link href="/projects" className="mt-4 text-studio-x hover:text-studio-x-600">
               Back to projects
             </Link>
@@ -595,18 +595,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       <DashboardLayout>
         <div className="space-y-6">
           {/* Header */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white dark:bg-card shadow dark:shadow-gray-800 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => router.back()}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </button>
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-900">{project.name}</h1>
-                  <div className="flex items-center mt-1 space-x-4 text-sm text-gray-500">
+                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">{project.name}</h1>
+                  <div className="flex items-center mt-1 space-x-4 text-sm text-gray-500 dark:text-muted-foreground">
                     <div className="flex items-center">
                       <Briefcase className="h-4 w-4 mr-1" />
                       {client?.name || 'Unknown Client'}
@@ -637,7 +637,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     </button>
                     <Link
                       href={`/projects/${project.id}/edit`}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Project
@@ -648,51 +648,51 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </div>
 
             {project.description && (
-              <p className="text-gray-600 mt-4">{project.description}</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-4">{project.description}</p>
             )}
 
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-secondary rounded-lg p-4">
                 <div className="flex items-center">
-                  <Users className="h-5 w-5 text-gray-400 mr-2" />
+                  <Users className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
                   <div>
-                    <p className="text-sm text-gray-500">Team Members</p>
-                    <p className="text-lg font-semibold text-gray-900">{teamMembers.length}</p>
+                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Team Members</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{teamMembers.length}</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-secondary rounded-lg p-4">
                 <div className="flex items-center">
-                  <Clock className="h-5 w-5 text-gray-400 mr-2" />
+                  <Clock className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-2" />
                   <div>
-                    <p className="text-sm text-gray-500">Total Hours</p>
-                    <p className="text-lg font-semibold text-gray-900">{formatHours(totalHours)}</p>
+                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Total Hours</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{formatHours(totalHours)}</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-secondary rounded-lg p-4">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                   <div>
-                    <p className="text-sm text-gray-500">Approved</p>
-                    <p className="text-lg font-semibold text-gray-900">{formatHours(approvedHours)}</p>
+                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Approved</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{formatHours(approvedHours)}</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-50 dark:bg-secondary rounded-lg p-4">
                 <div className="flex items-center">
                   <AlertCircle className="h-5 w-5 text-yellow-500 mr-2" />
                   <div>
-                    <p className="text-sm text-gray-500">Pending</p>
-                    <p className="text-lg font-semibold text-gray-900">{formatHours(pendingHours)}</p>
+                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Pending</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{formatHours(pendingHours)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="mt-6 border-b border-gray-200">
+            <div className="mt-6 border-b border-gray-200 dark:border-border">
               <nav className="-mb-px flex space-x-8">
                 {(['overview', 'timeentries', 'team'] as const).map((tab) => (
                   <button
@@ -701,7 +701,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     className={`py-2 px-1 border-b-2 font-medium text-sm ${
                       activeTab === tab
                         ? 'border-studio-x text-studio-x'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     {tab === 'overview' && 'Overview'}
@@ -714,31 +714,31 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           </div>
 
           {/* Tab Content */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white dark:bg-card shadow dark:shadow-gray-800 rounded-lg p-6">
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Project Timebanks</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-foreground mb-4">Project Timebanks</h3>
                   {timebanks.length > 0 ? (
                     <>
                       {/* Aggregated Timebank Summary */}
-                      <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-2">Total Available Hours</h4>
+                      <div className="mb-6 p-4 bg-gray-50 dark:bg-secondary border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <h4 className="font-medium text-gray-900 dark:text-foreground mb-2">Total Available Hours</h4>
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <p className="text-sm text-gray-600">Total Hours</p>
-                            <p className="text-xl font-semibold text-gray-900">
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground">Total Hours</p>
+                            <p className="text-xl font-semibold text-gray-900 dark:text-foreground">
                               {formatHours(timebanks.reduce((sum, tb) => sum + tb.totalHours, 0))}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-600">Used Hours</p>
-                            <p className="text-xl font-semibold text-gray-900">
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground">Used Hours</p>
+                            <p className="text-xl font-semibold text-gray-900 dark:text-foreground">
                               {formatHours(timebanks.reduce((sum, tb) => sum + tb.usedHours, 0))}
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm text-gray-600">Remaining Hours</p>
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground">Remaining Hours</p>
                             <p className="text-xl font-semibold text-green-600">
                               {formatHours(timebanks.reduce((sum, tb) => sum + tb.remainingHours, 0))}
                             </p>
@@ -766,7 +766,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       </div>
 
                       {/* Timebank Details */}
-                      <h4 className="font-medium text-gray-700 mb-3">Timebank Details</h4>
+                      <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Timebank Details</h4>
                       <div className="space-y-4">
                         {timebanks.filter(tb => tb.status === 'active').map((timebank) => {
                           const status = calculateTimebankStatus(timebank);
@@ -788,15 +788,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             <div key={timebank.id} className="border rounded-lg p-4">
                               <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-gray-900">{timebank.name}</h4>
+                                  <h4 className="font-medium text-gray-900 dark:text-foreground">{timebank.name}</h4>
                                   {timebank.description && (
-                                    <p className="text-sm text-gray-600 mt-1">{timebank.description}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{timebank.description}</p>
                                   )}
-                                  <p className="text-sm text-gray-500 mt-2">
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                     {formatHours(timebank.remainingHours)} of {formatHours(timebank.totalHours)} hours remaining
                                   </p>
                                   {timebank.lastTopUpDate && (
-                                    <p className="text-xs text-gray-500 mt-1">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                       Last top-up: {format(toDate(timebank.lastTopUpDate), 'MMM dd, yyyy')} 
                                       {timebank.lastTopUpAmount && ` (+${formatHours(timebank.lastTopUpAmount)} hours)`}
                                     </p>
@@ -813,14 +813,14 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                     </button>
                                   )}
                                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    timebank.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    timebank.status === 'active' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
                                   }`}>
                                     {timebank.status}
                                   </span>
                                 </div>
                               </div>
                               <div className="mt-3">
-                                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                                   <div
                                     className={`h-2 rounded-full transition-all duration-300 ${getStatusColor(status)}`}
                                     style={{ width: `${(timebank.usedHours / timebank.totalHours) * 100}%` }}
@@ -855,15 +855,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             <h4 className="font-medium text-gray-500 mt-6 mb-2">Previous Timebanks</h4>
                             <div className="space-y-2">
                               {timebanks.filter(tb => tb.status !== 'active').map((timebank) => (
-                                <div key={timebank.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                                <div key={timebank.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-secondary">
                                   <div className="flex justify-between items-center">
                                     <div>
-                                      <p className="text-sm font-medium text-gray-600">{timebank.name}</p>
-                                      <p className="text-xs text-gray-500">
+                                      <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{timebank.name}</p>
+                                      <p className="text-xs text-gray-500 dark:text-muted-foreground">
                                         Used {formatHours(timebank.usedHours)} of {formatHours(timebank.totalHours)} hours
                                       </p>
                                     </div>
-                                    <span className="text-xs text-gray-500">{timebank.status}</span>
+                                    <span className="text-xs text-gray-500 dark:text-muted-foreground capitalize">{timebank.status}</span>
                                   </div>
                                 </div>
                               ))}
@@ -873,13 +873,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       </div>
                     </>
                   ) : (
-                    <p className="text-gray-500">No timebanks available for this project</p>
+                    <p className="text-gray-500 dark:text-muted-foreground">No timebanks available for this project</p>
                   )}
                 </div>
 
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Project Timeline</h3>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-muted-foreground">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
                       Created: {project.createdAt ? format(toDate(project.createdAt), 'MMM dd, yyyy') : 'N/A'}
@@ -904,7 +904,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     <select
                       value={filterPeriod}
                       onChange={(e) => setFilterPeriod(e.target.value)}
-                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                      className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                     >
                       <option value="all">All Periods</option>
                       {getUniquePeriods().map(period => (
@@ -916,7 +916,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     <select
                       value={filterCategory}
                       onChange={(e) => setFilterCategory(e.target.value as WorkCategory | 'all')}
-                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                      className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                     >
                       <option value="all">All Categories</option>
                       {workCategories.map(category => (
@@ -930,7 +930,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     <select
                       value={filterUser}
                       onChange={(e) => setFilterUser(e.target.value)}
-                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                      className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                     >
                       <option value="all">All Users</option>
                       {teamMembers.map(member => (
@@ -942,7 +942,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     <select
                       value={filterDepartment}
                       onChange={(e) => setFilterDepartment(e.target.value)}
-                      className="rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm"
+                      className="rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                     >
                       <option value="all">All Departments</option>
                       <option value="studio_x">Studio X</option>
@@ -963,56 +963,56 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
                 {filteredTimeEntries.length > 0 ? (
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-secondary">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Category
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Description
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             User
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Hours
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Status
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white dark:bg-card divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredTimeEntries.map((entry) => {
                           const user = teamMembers.find(m => m.id === entry.userId);
                           return (
                             <tr key={entry.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                                 {entry.date ? format(toDate(entry.date), 'MMM dd, yyyy') : 'N/A'}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                                   {entry.category ? getCategoryLabel(entry.category) : 'Other'}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-sm text-gray-900">
+                              <td className="px-6 py-4 text-sm text-gray-900 dark:text-foreground">
                                 {entry.description}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                                 {user?.name || 'Unknown'}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                                 {formatHours(entry.hours)}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  entry.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                  entry.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
+                                  entry.status === 'approved' ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' :
+                                  entry.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' :
+                                  'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
                                 }`}>
                                   {entry.status}
                                 </span>
@@ -1021,12 +1021,12 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           );
                         })}
                       </tbody>
-                      <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+                      <tfoot className="bg-gray-50 dark:bg-secondary border-t-2 border-gray-300 dark:border-gray-600">
                         <tr>
-                          <td colSpan={4} className="px-6 py-4 text-sm font-medium text-gray-900 text-right">
+                          <td colSpan={4} className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-foreground text-right">
                             Total Hours:
                           </td>
-                          <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                          <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-foreground">
                             {formatHours(filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0))}
                           </td>
                           <td></td>
@@ -1036,7 +1036,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 dark:text-muted-foreground">
                       {timeEntries.length === 0 
                         ? 'No time entries recorded yet' 
                         : 'No time entries match the selected filters'}
@@ -1065,23 +1065,23 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                 {teamMembers.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {teamMembers.map((member) => (
-                      <div key={member.id} className="border rounded-lg p-4">
+                      <div key={member.id} className="border dark:border-gray-700 rounded-lg p-4">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-gray-600 font-medium">
+                          <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                            <span className="text-gray-600 dark:text-gray-300 font-medium">
                               {member.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div className="ml-3">
-                            <p className="text-sm font-medium text-gray-900">{member.name}</p>
-                            <p className="text-xs text-gray-500 capitalize">{member.role.replace('_', ' ')}</p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-foreground">{member.name}</p>
+                            <p className="text-xs text-gray-500 dark:text-muted-foreground capitalize">{member.role.replace('_', ' ')}</p>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No team members assigned yet</p>
+                  <p className="text-gray-500 dark:text-muted-foreground">No team members assigned yet</p>
                 )}
               </div>
             )}
@@ -1113,35 +1113,35 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
                       <Dialog.Title
                         as="h3"
-                        className="text-2xl font-semibold leading-6 text-gray-900 flex justify-between items-center mb-2"
+                        className="text-2xl font-semibold leading-6 text-gray-900 dark:text-foreground flex justify-between items-center mb-2"
                       >
                         Register Time
                         <button
                           onClick={() => setShowTimeModal(false)}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
                       </Dialog.Title>
-                      <p className="text-sm text-gray-600 mb-6">Record your work hours for {project.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Record your work hours for {project.name}</p>
 
                       <form onSubmit={handleRegisterTime} className="space-y-6">
                         {/* Show available hours summary */}
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                           <div className="flex items-center">
                             <Clock className="h-5 w-5 text-green-600 mr-2" />
                             <div>
-                              <p className="text-sm font-medium text-green-900">
+                              <p className="text-sm font-medium text-green-900 dark:text-green-100">
                                 Available hours: <span className="text-lg font-semibold">
                                   {formatHours(timebanks
                                     .filter(tb => tb.status === 'active')
                                     .reduce((sum, tb) => sum + tb.remainingHours, 0))}
                                 </span>
                               </p>
-                              <p className="text-xs text-green-700 mt-0.5">
+                              <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">
                                 Hours will be automatically allocated across available timebanks
                               </p>
                             </div>
@@ -1149,7 +1149,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                             What type of work did you do?
                           </label>
                           <div className="grid grid-cols-2 gap-3">
@@ -1160,12 +1160,12 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                 onClick={() => setTimeFormData({ ...timeFormData, category: category.value })}
                                 className={`p-4 rounded-lg border-2 text-left transition-all ${
                                   timeFormData.category === category.value
-                                    ? 'border-studio-x bg-studio-x-50 text-studio-x-700'
-                                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                                    ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x'
+                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
                                 }`}
                               >
                                 <div className="font-medium">{category.label}</div>
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   {category.value === 'project_management' && 'Planning, coordination, meetings'}
                                   {category.value === 'ios_development' && 'iPhone & iPad app development'}
                                   {category.value === 'android_development' && 'Android app development'}
@@ -1186,20 +1186,20 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               When did you work?
                             </label>
                             <input
                               type="date"
                               value={timeFormData.date}
                               onChange={(e) => setTimeFormData({ ...timeFormData, date: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                               required
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               How many hours?
                             </label>
                             <input
@@ -1208,7 +1208,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               min="0.25"
                               value={timeFormData.hours}
                               onChange={(e) => setTimeFormData({ ...timeFormData, hours: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                               placeholder="e.g., 2.5"
                               required
                             />
@@ -1216,23 +1216,23 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Describe what you worked on
                           </label>
                           <textarea
                             value={timeFormData.description}
                             onChange={(e) => setTimeFormData({ ...timeFormData, description: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             rows={4}
                             placeholder="Provide a brief description of the work completed... (optional)"
                           />
                         </div>
 
-                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t">
+                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
                           <button
                             type="button"
                             onClick={() => setShowTimeModal(false)}
-                            className="px-6 py-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x transition-colors"
+                            className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
                           >
                             Cancel
                           </button>
@@ -1278,20 +1278,20 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
                       <Dialog.Title
                         as="h3"
-                        className="text-2xl font-semibold leading-6 text-gray-900 flex justify-between items-center mb-2"
+                        className="text-2xl font-semibold leading-6 text-gray-900 dark:text-foreground flex justify-between items-center mb-2"
                       >
                         {timebanks.some(tb => tb.status === 'active') ? 'Add Hours to Timebank' : 'Add Timebank'}
                         <button
                           onClick={() => setShowTimebankModal(false)}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
                       </Dialog.Title>
-                      <p className="text-sm text-gray-600 mb-6">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
                         {timebanks.some(tb => tb.status === 'active') 
                           ? `Add more hours to the existing timebank for ${project.name}`
                           : `Create a new timebank for ${project.name}`}
@@ -1299,34 +1299,34 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
                       <form onSubmit={handleCreateTimebank} className="space-y-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Timebank Name
                           </label>
                           <input
                             type="text"
                             value={timebankFormData.name}
                             onChange={(e) => setTimebankFormData({ ...timebankFormData, name: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             placeholder={`e.g., ${project.name} ${timebanks.length + 1}`}
                           />
-                          <p className="mt-1 text-xs text-gray-500">Leave blank to auto-generate: "{project.name} {timebanks.length + 1}"</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">Leave blank to auto-generate: "{project.name} {timebanks.length + 1}"</p>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Description <span className="text-gray-500 font-normal">(optional)</span>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Description <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
                           </label>
                           <textarea
                             value={timebankFormData.description}
                             onChange={(e) => setTimebankFormData({ ...timebankFormData, description: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             rows={3}
                             placeholder="Add any notes or details about this timebank..."
                           />
                         </div>
                         
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <Clock className="inline h-4 w-4 mr-1" />
                             Total Hours
                           </label>
@@ -1336,16 +1336,16 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             min="1"
                             value={timebankFormData.totalHours}
                             onChange={(e) => setTimebankFormData({ ...timebankFormData, totalHours: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-lg font-medium"
                             placeholder="e.g., 100"
                             required
                           />
-                          <p className="mt-1 text-xs text-blue-700">The total number of hours available in this timebank</p>
+                          <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">The total number of hours available in this timebank</p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               <Calendar className="inline h-4 w-4 mr-1" />
                               Purchase Date
                             </label>
@@ -1364,13 +1364,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                   expiryDate: format(expiryDate, 'yyyy-MM-dd')
                                 });
                               }}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                               required
                             />
                           </div>
 
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               <AlertCircle className="inline h-4 w-4 mr-1" />
                               Expiry Date
                             </label>
@@ -1378,18 +1378,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               type="date"
                               value={timebankFormData.expiryDate}
                               onChange={(e) => setTimebankFormData({ ...timebankFormData, expiryDate: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                               required
                             />
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 -mt-4">Expiry date is automatically set to 1 year from purchase date, but can be edited</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 -mt-4">Expiry date is automatically set to 1 year from purchase date, but can be edited</p>
 
-                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t">
+                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
                           <button
                             type="button"
                             onClick={() => setShowTimebankModal(false)}
-                            className="px-6 py-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x transition-colors"
+                            className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
                           >
                             Cancel
                           </button>
@@ -1435,51 +1435,51 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-8 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
                       <Dialog.Title
                         as="h3"
-                        className="text-2xl font-semibold leading-6 text-gray-900 flex justify-between items-center mb-2"
+                        className="text-2xl font-semibold leading-6 text-gray-900 dark:text-foreground flex justify-between items-center mb-2"
                       >
                         Edit Timebank
                         <button
                           onClick={() => setShowEditTimebankModal(false)}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
                       </Dialog.Title>
-                      <p className="text-sm text-gray-600 mb-6">Update timebank details for {editingTimebank?.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Update timebank details for {editingTimebank?.name}</p>
 
                       <form onSubmit={handleEditTimebank} className="space-y-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Timebank Name
                           </label>
                           <input
                             type="text"
                             value={editTimebankFormData.name}
                             onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, name: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Description <span className="text-gray-500 font-normal">(optional)</span>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Description <span className="text-gray-500 dark:text-gray-400 font-normal">(optional)</span>
                           </label>
                           <textarea
                             value={editTimebankFormData.description}
                             onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, description: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             rows={3}
                             placeholder="Add any notes or details about this timebank..."
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               <Clock className="inline h-4 w-4 mr-1" />
                               Total Hours
                             </label>
@@ -1489,14 +1489,14 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               min="0.1"
                               value={editTimebankFormData.totalHours}
                               onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, totalHours: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-lg font-medium"
                               required
                             />
-                            <p className="mt-1 text-xs text-blue-700">Total hours in this timebank</p>
+                            <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">Total hours in this timebank</p>
                           </div>
 
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                               <Clock className="inline h-4 w-4 mr-1" />
                               Remaining Hours
                             </label>
@@ -1507,15 +1507,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               max={editTimebankFormData.totalHours}
                               value={editTimebankFormData.remainingHours}
                               onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, remainingHours: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white text-lg font-medium"
+                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-lg font-medium"
                               required
                             />
-                            <p className="mt-1 text-xs text-green-700">Hours still available</p>
+                            <p className="mt-1 text-xs text-green-700 dark:text-green-300">Hours still available</p>
                           </div>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <AlertCircle className="inline h-4 w-4 mr-1" />
                             Expiry Date
                           </label>
@@ -1523,15 +1523,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             type="date"
                             value={editTimebankFormData.expiryDate}
                             onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, expiryDate: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 bg-white"
+                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                           />
-                          <p className="mt-1 text-xs text-gray-500">Leave empty if no expiry date</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave empty if no expiry date</p>
                         </div>
 
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                           <div className="flex items-start">
                             <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
-                            <div className="text-sm text-yellow-800">
+                            <div className="text-sm text-yellow-800 dark:text-yellow-200">
                               <p className="font-medium">Important Notes:</p>
                               <ul className="mt-1 list-disc list-inside space-y-1">
                                 <li>Changing total hours will affect percentage calculations</li>
@@ -1542,14 +1542,14 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </div>
                         </div>
 
-                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t">
+                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
                           <button
                             type="button"
                             onClick={() => {
                               setShowEditTimebankModal(false);
                               setEditingTimebank(null);
                             }}
-                            className="px-6 py-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x transition-colors"
+                            className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
                           >
                             Cancel
                           </button>

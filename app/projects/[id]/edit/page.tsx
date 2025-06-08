@@ -119,7 +119,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
     <ProtectedRoute>
       <DashboardLayout>
         <div className="space-y-6">
-          <div className="bg-white shadow rounded-lg">
+          <div className="bg-white dark:bg-card shadow dark:shadow-gray-800 rounded-lg">
             <form onSubmit={handleSubmit}>
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center justify-between mb-6">
@@ -127,17 +127,17 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                     <button
                       type="button"
                       onClick={() => router.back()}
-                      className="text-gray-400 hover:text-gray-500"
+                      className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                     >
                       <ArrowLeft className="h-5 w-5" />
                     </button>
-                    <h1 className="text-2xl font-semibold text-gray-900">Edit Project</h1>
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Edit Project</h1>
                   </div>
                   <div className="flex space-x-3">
                     <button
                       type="button"
                       onClick={() => router.back()}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-secondary"
                     >
                       Cancel
                     </button>
@@ -155,10 +155,10 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                 <div className="space-y-6">
                   {/* Basic Information */}
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-foreground mb-4">Basic Information</h3>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Project Name
                         </label>
                         <input
@@ -166,21 +166,21 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                           name="name"
                           id="name"
                           required
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="client" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="client" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Client
                         </label>
                         <select
                           id="client"
                           name="client"
                           required
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                           value={formData.clientId}
                           onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
                         >
@@ -194,13 +194,13 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                       </div>
 
                       <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Status
                         </label>
                         <select
                           id="status"
                           name="status"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                           value={formData.status}
                           onChange={(e) => setFormData({ ...formData, status: e.target.value as Project['status'] })}
                         >
@@ -212,14 +212,14 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Description
                         </label>
                         <textarea
                           id="description"
                           name="description"
                           rows={3}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm"
+                          className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x sm:text-sm bg-white dark:bg-input text-gray-900 dark:text-foreground"
                           value={formData.description}
                           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
@@ -229,20 +229,20 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
 
                   {/* Team Members */}
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Team Members</h3>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-foreground mb-4">Team Members</h3>
+                    <div className="bg-gray-50 dark:bg-secondary rounded-lg p-4">
                       <div className="space-y-2">
                         {users.map((user) => (
-                          <div key={user.id} className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
+                          <div key={user.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-md shadow-sm dark:shadow-gray-700/50 border border-gray-200 dark:border-gray-700">
                             <div className="flex items-center">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
+                              <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                   {user.name.charAt(0).toUpperCase()}
                                 </span>
                               </div>
                               <div className="ml-3">
-                                <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                                <p className="text-sm text-gray-500">{user.role.replace('_', ' ')}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-foreground">{user.name}</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">{user.role.replace('_', ' ')}</p>
                               </div>
                             </div>
                             <button
@@ -250,8 +250,8 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                               onClick={() => toggleTeamMember(user.id)}
                               className={`inline-flex items-center px-3 py-1 border rounded-full text-sm font-medium ${
                                 formData.teamMembers.includes(user.id)
-                                  ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100'
-                                  : 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100'
+                                  ? 'border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30'
+                                  : 'border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30'
                               }`}
                             >
                               {formData.teamMembers.includes(user.id) ? (
@@ -269,7 +269,7 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
                           </div>
                         ))}
                       </div>
-                      <p className="mt-3 text-sm text-gray-500">
+                      <p className="mt-3 text-sm text-gray-500 dark:text-muted-foreground">
                         {formData.teamMembers.length} team member{formData.teamMembers.length !== 1 ? 's' : ''} selected
                       </p>
                     </div>

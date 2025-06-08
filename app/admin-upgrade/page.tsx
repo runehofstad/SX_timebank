@@ -56,10 +56,10 @@ export default function AdminUpgradePage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900 dark:text-foreground">
               Admin Upgrade Tool
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-gray-600 dark:text-muted-foreground">
               This is a temporary page to upgrade your account to Admin role
             </p>
           </div>
@@ -67,12 +67,12 @@ export default function AdminUpgradePage() {
           <div className="bg-white shadow rounded-lg p-6">
             <div className="space-y-4">
               <div>
-                <p className="text-sm text-gray-600">Current User:</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Current User:</p>
                 <p className="font-medium">{userProfile?.email}</p>
               </div>
               
               <div>
-                <p className="text-sm text-gray-600">Current Role:</p>
+                <p className="text-sm text-gray-600 dark:text-muted-foreground">Current Role:</p>
                 <p className="font-medium capitalize">{userProfile?.role?.replace('_', ' ') || 'No role set'}</p>
               </div>
               
@@ -85,7 +85,7 @@ export default function AdminUpgradePage() {
               
               {userProfile?.role === 'admin' ? (
                 <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                  <p className="text-green-800">✓ You are already an Admin!</p>
+                  <p className="text-green-800 dark:text-green-200">✓ You are already an Admin!</p>
                 </div>
               ) : (
                 <div className="space-y-4">

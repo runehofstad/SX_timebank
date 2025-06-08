@@ -279,7 +279,7 @@ export default function TimeTrackingPage() {
       <ProtectedRoute>
         <DashboardLayout>
           <div className="space-y-6">
-            <h1 className="text-2xl font-semibold text-gray-900">Time Tracking</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Time Tracking</h1>
             <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative">
               <strong className="font-bold">Profile Required!</strong>
               <p className="mt-2">You need to create a user profile before you can track time.</p>
@@ -298,7 +298,7 @@ export default function TimeTrackingPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Time Tracking</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Time Tracking</h1>
             <button
               onClick={() => setShowModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
@@ -314,8 +314,8 @@ export default function TimeTrackingPage() {
             </div>
           ) : (
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-background">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
@@ -342,27 +342,27 @@ export default function TimeTrackingPage() {
                     )}
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-200 dark:divide-gray-700">
                   {timeEntries.map((entry) => (
                     <tr key={entry.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                         {entry.date instanceof Date 
                           ? format(entry.date, 'MMM dd, yyyy')
                           : format(new Date(entry.date), 'MMM dd, yyyy')}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                         {getUserName(entry.userId)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                         <div>
                           <p className="font-medium">{getProjectName(entry.projectId)}</p>
-                          <p className="text-gray-500">{getClientName(entry.projectId)}</p>
+                          <p className="text-gray-500 dark:text-muted-foreground">{getClientName(entry.projectId)}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
                         {entry.description}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-foreground">
                         {entry.hours}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -407,13 +407,13 @@ export default function TimeTrackingPage() {
                   <form onSubmit={handleSubmit}>
                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
                           Log Time Entry
                         </h3>
                         <button
                           type="button"
                           onClick={resetForm}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
@@ -421,14 +421,14 @@ export default function TimeTrackingPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="clientId" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Client
                           </label>
                           <select
                             name="clientId"
                             id="clientId"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={selectedClientId}
                             onChange={(e) => {
                               setSelectedClientId(e.target.value);
@@ -448,14 +448,14 @@ export default function TimeTrackingPage() {
                         {selectedClientId && (
                           <>
                             <div>
-                              <label htmlFor="projectId" className="block text-sm font-medium text-gray-700">
+                              <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Project
                               </label>
                               <select
                                 name="projectId"
                                 id="projectId"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                                 value={selectedProjectId}
                                 onChange={(e) => setSelectedProjectId(e.target.value)}
                               >
@@ -469,14 +469,14 @@ export default function TimeTrackingPage() {
                             </div>
 
                             <div>
-                              <label htmlFor="timebankId" className="block text-sm font-medium text-gray-700">
+                              <label htmlFor="timebankId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Timebank
                               </label>
                               <select
                                 name="timebankId"
                                 id="timebankId"
                                 required
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                                 value={selectedTimebankId}
                                 onChange={(e) => setSelectedTimebankId(e.target.value)}
                               >
@@ -492,7 +492,7 @@ export default function TimeTrackingPage() {
                         )}
                         
                         <div>
-                          <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Date
                           </label>
                           <input
@@ -500,14 +500,14 @@ export default function TimeTrackingPage() {
                             name="date"
                             id="date"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.date}
                             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="hours" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="hours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Hours
                           </label>
                           <input
@@ -517,14 +517,14 @@ export default function TimeTrackingPage() {
                             required
                             min="0.25"
                             step="0.25"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.hours}
                             onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Description
                           </label>
                           <textarea
@@ -532,7 +532,7 @@ export default function TimeTrackingPage() {
                             id="description"
                             required
                             rows={3}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                           />

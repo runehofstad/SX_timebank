@@ -168,13 +168,13 @@ export default function UsersPage() {
   const getRoleBadgeColor = (role: User['role']) => {
     switch (role) {
       case 'admin':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-300';
       case 'project_manager':
-        return 'bg-studio-x-100 text-studio-x-800';
+        return 'bg-studio-x-100 dark:bg-studio-x/20 text-studio-x-800 dark:text-studio-x';
       case 'developer':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
     }
   };
 
@@ -183,7 +183,7 @@ export default function UsersPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Users</h1>
             <button
               onClick={() => setShowInviteModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
@@ -198,24 +198,24 @@ export default function UsersPage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-studio-x"></div>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="bg-white dark:bg-card shadow dark:shadow-gray-800 overflow-hidden sm:rounded-md">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {users.map((user) => (
                   <li key={user.id}>
                     <div className="px-4 py-4 sm:px-6 flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-gray-600 font-medium">
+                          <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                            <span className="text-gray-600 dark:text-gray-300 font-medium">
                               {user.name.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-foreground">{user.name}</div>
+                          <div className="text-sm text-gray-500 dark:text-muted-foreground">{user.email}</div>
                           {user.department && (
-                            <div className="text-xs text-gray-400 mt-1">
+                            <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                               {user.department === 'studio_x' ? 'Studio X' : 'Developer Team'}
                             </div>
                           )}
@@ -258,19 +258,19 @@ export default function UsersPage() {
           {showInviteModal && (
             <div className="fixed z-10 inset-0 overflow-y-auto">
               <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowInviteModal(false)} />
+                <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" onClick={() => setShowInviteModal(false)} />
                 
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="inline-block align-bottom bg-white dark:bg-card rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-800 transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <form onSubmit={handleInvite}>
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="bg-white dark:bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
                           Invite New User
                         </h3>
                         <button
                           type="button"
                           onClick={() => setShowInviteModal(false)}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
@@ -278,7 +278,7 @@ export default function UsersPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Email Address
                           </label>
                           <input
@@ -286,14 +286,14 @@ export default function UsersPage() {
                             name="email"
                             id="email"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={inviteData.email}
                             onChange={(e) => setInviteData({ ...inviteData, email: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Full Name
                           </label>
                           <input
@@ -301,20 +301,20 @@ export default function UsersPage() {
                             name="name"
                             id="name"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={inviteData.name}
                             onChange={(e) => setInviteData({ ...inviteData, name: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Role
                           </label>
                           <select
                             name="role"
                             id="role"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={inviteData.role}
                             onChange={(e) => setInviteData({ ...inviteData, role: e.target.value as User['role'] })}
                           >
@@ -325,13 +325,13 @@ export default function UsersPage() {
                         </div>
                         
                         <div>
-                          <label htmlFor="department" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Department
                           </label>
                           <select
                             name="department"
                             id="department"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={inviteData.department}
                             onChange={(e) => setInviteData({ ...inviteData, department: e.target.value as Department })}
                           >
@@ -342,10 +342,10 @@ export default function UsersPage() {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div className="bg-gray-50 dark:bg-secondary px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                       <button
                         type="submit"
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         <Mail className="h-4 w-4 mr-2" />
                         Send Invitation
@@ -353,7 +353,7 @@ export default function UsersPage() {
                       <button
                         type="button"
                         onClick={() => setShowInviteModal(false)}
-                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-card text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Cancel
                       </button>
@@ -368,19 +368,19 @@ export default function UsersPage() {
           {showEditModal && editingUser && (
             <div className="fixed z-10 inset-0 overflow-y-auto">
               <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowEditModal(false)} />
+                <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" onClick={() => setShowEditModal(false)} />
                 
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="inline-block align-bottom bg-white dark:bg-card rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-800 transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <form onSubmit={handleUpdateUser}>
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="bg-white dark:bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
                           Edit User
                         </h3>
                         <button
                           type="button"
                           onClick={() => setShowEditModal(false)}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
@@ -388,38 +388,38 @@ export default function UsersPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Email
                           </label>
                           <input
                             type="email"
                             value={editingUser.email}
                             disabled
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 sm:text-sm"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 sm:text-sm"
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Full Name
                           </label>
                           <input
                             type="text"
                             id="edit-name"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={editData.name}
                             onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="edit-role" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="edit-role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Role
                           </label>
                           <select
                             id="edit-role"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={editData.role}
                             onChange={(e) => setEditData({ ...editData, role: e.target.value as User['role'] })}
                             disabled={editingUser.id === userProfile?.id}
@@ -429,17 +429,17 @@ export default function UsersPage() {
                             <option value="admin">Admin</option>
                           </select>
                           {editingUser.id === userProfile?.id && (
-                            <p className="mt-1 text-xs text-gray-500">You cannot change your own role</p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">You cannot change your own role</p>
                           )}
                         </div>
                         
                         <div>
-                          <label htmlFor="edit-department" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="edit-department" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Department
                           </label>
                           <select
                             id="edit-department"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             value={editData.department || ''}
                             onChange={(e) => setEditData({ ...editData, department: (e.target.value || undefined) as Department | undefined })}
                           >
@@ -451,17 +451,17 @@ export default function UsersPage() {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div className="bg-gray-50 dark:bg-secondary px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                       <button
                         type="submit"
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Save Changes
                       </button>
                       <button
                         type="button"
                         onClick={() => setShowEditModal(false)}
-                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-card text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                       >
                         Cancel
                       </button>

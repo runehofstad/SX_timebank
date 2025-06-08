@@ -138,7 +138,7 @@ export default function TimebanksPage() {
       <DashboardLayout>
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-900">Timebanks</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Timebanks</h1>
             <button
               onClick={() => setShowModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
@@ -166,7 +166,7 @@ export default function TimebanksPage() {
                           <h3 className="text-lg font-medium text-gray-900 truncate">
                             {timebank.name}
                           </h3>
-                          <p className="mt-1 text-sm text-gray-500">
+                          <p className="mt-1 text-sm text-gray-500 dark:text-muted-foreground">
                             {getClientName(timebank.clientId)}
                           </p>
                         </div>
@@ -177,7 +177,7 @@ export default function TimebanksPage() {
                       
                       <div className="mt-4">
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Hours Used</span>
+                          <span className="text-gray-500 dark:text-muted-foreground">Hours Used</span>
                           <span className="font-medium">
                             {formatHours(timebank.usedHours)} / {formatHours(timebank.totalHours)}
                           </span>
@@ -220,19 +220,19 @@ export default function TimebanksPage() {
           {showModal && (
             <div className="fixed z-10 inset-0 overflow-y-auto">
               <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={resetForm} />
+                <div className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity" onClick={resetForm} />
                 
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div className="inline-block align-bottom bg-white dark:bg-card rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                   <form onSubmit={handleSubmit}>
-                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div className="bg-white dark:bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
                           {editingTimebank ? 'Edit Timebank' : 'Add New Timebank'}
                         </h3>
                         <button
                           type="button"
                           onClick={resetForm}
-                          className="text-gray-400 hover:text-gray-500"
+                          className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
                         </button>
@@ -240,14 +240,14 @@ export default function TimebanksPage() {
                       
                       <div className="space-y-4">
                         <div>
-                          <label htmlFor="clientId" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Client
                           </label>
                           <select
                             name="clientId"
                             id="clientId"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.clientId}
                             onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
                           >
@@ -261,7 +261,7 @@ export default function TimebanksPage() {
                         </div>
                         
                         <div>
-                          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Timebank Name
                           </label>
                           <input
@@ -269,14 +269,14 @@ export default function TimebanksPage() {
                             name="name"
                             id="name"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="totalHours" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="totalHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Total Hours
                           </label>
                           <input
@@ -286,14 +286,14 @@ export default function TimebanksPage() {
                             required
                             min="0"
                             step="0.5"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.totalHours}
                             onChange={(e) => setFormData({ ...formData, totalHours: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="purchaseDate" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="purchaseDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Purchase Date
                           </label>
                           <input
@@ -301,21 +301,21 @@ export default function TimebanksPage() {
                             name="purchaseDate"
                             id="purchaseDate"
                             required
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.purchaseDate}
                             onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
                           />
                         </div>
                         
                         <div>
-                          <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Expiry Date (optional)
                           </label>
                           <input
                             type="date"
                             name="expiryDate"
                             id="expiryDate"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
                             value={formData.expiryDate}
                             onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                           />

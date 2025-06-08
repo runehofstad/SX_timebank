@@ -96,10 +96,10 @@ export default function ClientPortalPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-foreground">
             Client Portal
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-muted-foreground">
             View your timebank status and project information
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function ClientPortalPage() {
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
             <form className="space-y-6" onSubmit={handleLogin}>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email address
                 </label>
                 <div className="mt-1">
@@ -126,7 +126,7 @@ export default function ClientPortalPage() {
               </div>
 
               <div>
-                <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="accessCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Access Code
                 </label>
                 <div className="mt-1">
@@ -140,7 +140,7 @@ export default function ClientPortalPage() {
                     onChange={(e) => setAccessCode(e.target.value)}
                   />
                 </div>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-500 dark:text-muted-foreground">
                   Contact your project manager if you don't have an access code
                 </p>
               </div>
@@ -165,13 +165,13 @@ export default function ClientPortalPage() {
   const totalHoursUsed = timebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
+      <div className="bg-white shadow dark:shadow-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Client Portal</h1>
-              <p className="text-sm text-gray-500">Welcome, {client?.name}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">Client Portal</h1>
+              <p className="text-sm text-gray-500 dark:text-muted-foreground">Welcome, {client?.name}</p>
             </div>
             <button
               onClick={() => {
@@ -180,7 +180,7 @@ export default function ClientPortalPage() {
                 setClientEmail('');
                 setAccessCode('');
               }}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-300"
             >
               Sign out
             </button>
@@ -195,14 +195,14 @@ export default function ClientPortalPage() {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <Clock className="h-6 w-6 text-gray-400" />
+                  <Clock className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
                       Total Hours Available
                     </dt>
-                    <dd className="text-lg font-semibold text-gray-900">
+                    <dd className="text-lg font-semibold text-gray-900 dark:text-foreground">
                       {formatHours(totalHoursAvailable)}
                     </dd>
                   </dl>
@@ -215,14 +215,14 @@ export default function ClientPortalPage() {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <TrendingDown className="h-6 w-6 text-gray-400" />
+                  <TrendingDown className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
                       Hours Used
                     </dt>
-                    <dd className="text-lg font-semibold text-gray-900">
+                    <dd className="text-lg font-semibold text-gray-900 dark:text-foreground">
                       {formatHours(totalHoursUsed)}
                     </dd>
                   </dl>
@@ -235,14 +235,14 @@ export default function ClientPortalPage() {
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <FolderOpen className="h-6 w-6 text-gray-400" />
+                  <FolderOpen className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">
                       Active Projects
                     </dt>
-                    <dd className="text-lg font-semibold text-gray-900">
+                    <dd className="text-lg font-semibold text-gray-900 dark:text-foreground">
                       {projects.filter(p => p.status === 'active').length}
                     </dd>
                   </dl>
@@ -264,7 +264,7 @@ export default function ClientPortalPage() {
                 <div key={timebank.id} className="bg-white overflow-hidden shadow rounded-lg">
                   <div className="p-5">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-medium text-gray-900">
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-foreground">
                         {timebank.name}
                       </h3>
                       <div className={`${getStatusColor(status)} rounded-full p-2`}>
@@ -274,7 +274,7 @@ export default function ClientPortalPage() {
                     
                     <div className="mt-4">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Hours Used</span>
+                        <span className="text-gray-500 dark:text-muted-foreground">Hours Used</span>
                         <span className="font-medium">
                           {formatHours(timebank.usedHours)} / {formatHours(timebank.totalHours)}
                         </span>
@@ -285,7 +285,7 @@ export default function ClientPortalPage() {
                           style={{ width: `${percentageUsed}%` }}
                         />
                       </div>
-                      <div className="mt-2 flex justify-between text-xs text-gray-500">
+                      <div className="mt-2 flex justify-between text-xs text-gray-500 dark:text-muted-foreground">
                         <span>Remaining: {formatHours(timebank.remainingHours)}</span>
                         <span>{percentageUsed.toFixed(0)}% used</span>
                       </div>
@@ -301,23 +301,23 @@ export default function ClientPortalPage() {
         <div>
           <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {recentEntries.map((entry) => {
                 const project = projects.find(p => p.id === entry.projectId);
                 return (
                   <li key={entry.id} className="px-4 py-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-foreground">
                           {project?.name || 'Unknown Project'}
                         </p>
-                        <p className="text-sm text-gray-500">{entry.description}</p>
+                        <p className="text-sm text-gray-500 dark:text-muted-foreground">{entry.description}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-foreground">
                           {formatHours(entry.hours)} hours
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-muted-foreground">
                           {format(new Date(entry.date), 'MMM dd, yyyy')}
                         </p>
                       </div>

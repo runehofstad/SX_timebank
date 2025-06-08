@@ -32,13 +32,29 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            {/* Light mode logo */}
+            <img 
+              src="/timebank_logo_light.png" 
+              alt="Timebank Logo" 
+              className="h-16 w-auto dark:hidden"
+            />
+            {/* Dark mode logo */}
+            <img 
+              src="/timebank_logo_dark.png" 
+              alt="Timebank Logo" 
+              className="h-16 w-auto hidden dark:block"
+            />
+          </div>
+          
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-foreground">
             Create your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-muted-foreground">
             Or{' '}
             <Link href="/login" className="font-medium text-studio-x hover:text-studio-x-600">
               sign in to existing account
@@ -48,7 +64,7 @@ export default function RegisterPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Full Name
               </label>
               <input
@@ -64,7 +80,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email address
               </label>
               <input
@@ -80,7 +96,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
@@ -96,7 +112,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Role
               </label>
               <select
@@ -117,7 +133,7 @@ export default function RegisterPage() {
             <div className="rounded-md bg-red-50 p-4">
               <div className="flex">
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">{error}</h3>
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>
                 </div>
               </div>
             </div>

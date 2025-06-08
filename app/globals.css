@@ -3,15 +3,57 @@
 @tailwind utilities;
 
 :root {
+  /* Light mode colors */
   --background: #ffffff;
   --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --popover: #ffffff;
+  --popover-foreground: #171717;
+  --primary: #d1275a;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #171717;
+  --muted: #f9fafb;
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
+  --accent-foreground: #171717;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #d1275a;
+  --sidebar-bg: #f9fafb;
+  --sidebar-border: #e5e7eb;
+  --sidebar-text: #374151;
+  --sidebar-hover: #f3f4f6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  /* Dark mode colors */
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #1a1a1a;
+  --card-foreground: #ededed;
+  --popover: #1a1a1a;
+  --popover-foreground: #ededed;
+  --primary: #d1275a;
+  --primary-foreground: #ffffff;
+  --secondary: #262626;
+  --secondary-foreground: #ededed;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #262626;
+  --accent-foreground: #ededed;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #404040;
+  --input: #404040;
+  --ring: #d1275a;
+  --sidebar-bg: #171717;
+  --sidebar-border: #262626;
+  --sidebar-text: #e5e5e5;
+  --sidebar-hover: #262626;
 }
 
 body {
@@ -21,6 +63,16 @@ body {
 }
 
 @layer base {
+  /* Apply theme-aware styles to all elements */
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Form inputs with theme support */
   input[type="text"],
   input[type="email"],
   input[type="password"],
@@ -35,27 +87,25 @@ body {
   input[type="week"],
   textarea,
   select {
-    @apply text-gray-900 bg-white;
+    @apply text-foreground bg-background border-input;
   }
   
-  /* Ensure dark mode doesn't affect form inputs */
-  @media (prefers-color-scheme: dark) {
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    input[type="tel"],
-    input[type="date"],
-    input[type="datetime-local"],
-    input[type="month"],
-    input[type="search"],
-    input[type="time"],
-    input[type="url"],
-    input[type="week"],
-    textarea,
-    select {
-      @apply text-gray-900 bg-white;
-    }
+  /* Dark mode specific form styles */
+  .dark input[type="text"],
+  .dark input[type="email"],
+  .dark input[type="password"],
+  .dark input[type="number"],
+  .dark input[type="tel"],
+  .dark input[type="date"],
+  .dark input[type="datetime-local"],
+  .dark input[type="month"],
+  .dark input[type="search"],
+  .dark input[type="time"],
+  .dark input[type="url"],
+  .dark input[type="week"],
+  .dark textarea,
+  .dark select {
+    @apply text-foreground bg-card border-input;
   }
 }
 
