@@ -65,14 +65,22 @@ export default function ForgotPasswordPage() {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950 p-4">
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>
+                </div>
+              </div>
             </div>
           )}
           
           {message && (
-            <div className="rounded-md bg-green-50 dark:bg-green-950 p-4">
-              <p className="text-sm text-green-800 dark:text-green-200">{message}</p>
+            <div className="rounded-md bg-green-50 dark:bg-green-900/20 p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800 dark:text-green-200">{message}</h3>
+                </div>
+              </div>
             </div>
           )}
           
@@ -87,7 +95,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm bg-white dark:bg-card"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm bg-white dark:bg-card"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -99,7 +107,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Sending...' : 'Send reset email'}
             </button>
@@ -108,7 +116,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link 
               href="/login" 
-              className="font-medium text-primary hover:text-primary/80"
+              className="font-medium text-studio-x hover:text-studio-x-600"
             >
               Back to login
             </Link>
