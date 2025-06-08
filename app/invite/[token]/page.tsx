@@ -106,8 +106,8 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
         <div className="max-w-md w-full text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Invalid Invitation</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground mb-4">Invalid Invitation</h2>
+          <p className="text-gray-600 dark:text-muted-foreground mb-8">
             This invitation link is invalid or has already been used.
           </p>
           <a href="/login" className="text-studio-x hover:text-studio-x-600">
@@ -119,9 +119,25 @@ export default function InvitePage({ params }: { params: { token: string } }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            {/* Light mode logo */}
+            <img 
+              src="/timebank_logo_light.png" 
+              alt="Timebank Logo" 
+              className="h-16 w-auto dark:hidden"
+            />
+            {/* Dark mode logo */}
+            <img 
+              src="/timebank_logo_dark.png" 
+              alt="Timebank Logo" 
+              className="h-16 w-auto hidden dark:block"
+            />
+          </div>
+          
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-foreground">
             Accept Invitation
           </h2>
@@ -138,7 +154,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 type="text"
                 value={invitation.name}
                 disabled
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm bg-gray-100 dark:bg-muted"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm bg-gray-100 dark:bg-gray-800"
               />
             </div>
             
@@ -148,7 +164,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 type="email"
                 value={invitation.email}
                 disabled
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm bg-gray-100 dark:bg-muted"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm bg-gray-100 dark:bg-gray-800"
               />
             </div>
             
@@ -162,7 +178,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground bg-white dark:bg-card rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm"
                 placeholder="Minimum 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -179,7 +195,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-foreground bg-white dark:bg-card rounded-md focus:outline-none focus:ring-studio-x focus:border-studio-x focus:z-10 sm:text-sm"
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -188,7 +204,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
           </div>
 
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800 dark:text-red-200">{error}</h3>

@@ -34,7 +34,7 @@ interface SystemSettings {
 
 export default function SettingsPage() {
   const { userProfile } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, themeMode, setThemeMode } = useTheme();
   const [settings, setSettings] = useState<SystemSettings>({
     companyName: '',
     companyEmail: '',
@@ -141,21 +141,53 @@ export default function SettingsPage() {
                 Appearance
               </h3>
               <div className="mt-6">
-                <div className="flex items-center justify-between max-w-md">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-foreground">Theme</p>
-                    <p className="text-sm text-gray-500 dark:text-muted-foreground">Choose between light and dark mode</p>
-                  </div>
-                  <button
-                    onClick={toggleTheme}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-studio-x focus:ring-offset-2"
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-foreground mb-1">Theme</p>
+                  <p className="text-sm text-gray-500 dark:text-muted-foreground mb-4">Choose your preferred appearance</p>
+                  <div className="grid grid-cols-3 gap-3 max-w-md">
+                    <button
+                      onClick={() => setThemeMode('light')}
+                      className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                        themeMode === 'light' 
+                          ? 'border-studio-x bg-studio-x/10' 
+                          : 'border-gray-300 dark:border-gray-600'
                       }`}
-                    />
-                  </button>
+                    >
+                      <Sun className="h-6 w-6 mb-1" />
+                      <span className="text-sm font-medium">Light</span>
+                    </button>
+                    <button
+                      onClick={() => setThemeMode('dark')}
+                      className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                        themeMode === 'dark' 
+                          ? 'border-studio-x bg-studio-x/10' 
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      <Moon className="h-6 w-6 mb-1" />
+                      <span className="text-sm font-medium">Dark</span>
+                    </button>
+                    <button
+                      onClick={() => setThemeMode('system')}
+                      className={`flex flex-col items-center p-3 rounded-lg border-2 transition-colors ${
+                        themeMode === 'system' 
+                          ? 'border-studio-x bg-studio-x/10' 
+                          : 'border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      <div className="relative h-6 w-6 mb-1">
+                        <Sun className="h-4 w-4 absolute top-0 left-0" />
+                        <Moon className="h-4 w-4 absolute bottom-0 right-0" />
+                      </div>
+                      <span className="text-sm font-medium">System</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-muted-foreground mt-3">
+                    {themeMode === 'system' 
+                      ? `Currently using ${theme} mode based on your system settings`
+                      : `Using ${themeMode} mode`
+                    }
+                  </p>
                 </div>
               </div>
             </div>
@@ -171,7 +203,7 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Name</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                     value={settings.companyName}
                     onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
                   />
@@ -180,7 +212,7 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Email</label>
                   <input
                     type="email"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                     value={settings.companyEmail}
                     onChange={(e) => setSettings({ ...settings, companyEmail: e.target.value })}
                   />
@@ -189,7 +221,7 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Phone</label>
                   <input
                     type="tel"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                     value={settings.companyPhone}
                     onChange={(e) => setSettings({ ...settings, companyPhone: e.target.value })}
                   />
@@ -198,7 +230,7 @@ export default function SettingsPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Company Address</label>
                   <input
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                     value={settings.companyAddress}
                     onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
                   />
@@ -234,7 +266,7 @@ export default function SettingsPage() {
                       type="number"
                       min="0"
                       max="100"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                       value={settings.lowHoursThreshold}
                       onChange={(e) => setSettings({ ...settings, lowHoursThreshold: parseInt(e.target.value) })}
                     />
@@ -247,7 +279,7 @@ export default function SettingsPage() {
                       type="number"
                       min="0"
                       max="100"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                       value={settings.criticalHoursThreshold}
                       onChange={(e) => setSettings({ ...settings, criticalHoursThreshold: parseInt(e.target.value) })}
                     />
@@ -262,7 +294,7 @@ export default function SettingsPage() {
                     <input
                       type="email"
                       placeholder="Enter email address"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm text-gray-900 dark:text-foreground bg-white dark:bg-card"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                     />
@@ -305,7 +337,7 @@ export default function SettingsPage() {
                   <input
                     type="number"
                     min="0"
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm sm:max-w-xs text-gray-900 dark:text-foreground"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm sm:max-w-xs text-gray-900 dark:text-foreground bg-white dark:bg-card"
                     value={settings.defaultTimebankExpiry}
                     onChange={(e) => setSettings({ ...settings, defaultTimebankExpiry: parseInt(e.target.value) })}
                   />
