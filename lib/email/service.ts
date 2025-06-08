@@ -41,7 +41,6 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     
     // Try to create transporter with current username format
     let transporter;
-    let authError = null;
     
     const createTransporter = (username: string) => {
       console.log(`Creating transporter with username: ${username}`);
@@ -77,12 +76,12 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       console.log('Verifying email configuration...');
       await transporter.verify();
       console.log('Email configuration verified successfully');
-    } catch (verifyError: any) {
+    } catch (verifyError) {
       console.error('Email configuration verification failed:', verifyError);
-      authError = verifyError;
       
       // If authentication failed and we used short username, try with full email
-      if (verifyError.message?.includes('auth') && process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('@')) {
+      const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
+      if (errorMessage.includes('auth') && process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('@')) {
         console.log('Authentication failed with short username, trying with full email format...');
         const fullEmail = process.env.EMAIL_FROM || `${process.env.EMAIL_USER}@studiox.tech`;
         transporter = createTransporter(fullEmail);
@@ -90,10 +89,8 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
         try {
           await transporter.verify();
           console.log('Email configuration verified successfully with full email username');
-          authError = null; // Clear the error since it worked
         } catch (secondError) {
           console.error('Email configuration verification failed with full email too:', secondError);
-          authError = secondError;
         }
       }
     }
@@ -118,22 +115,25 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       rejected: result.rejected,
       response: result.response
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error sending email:', error);
-    console.error('Error type:', error.code);
-    console.error('Error response:', error.response);
-    console.error('Error command:', error.command);
+    
+    // Type-safe error handling
+    const err = error as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.error('Error type:', err.code);
+    console.error('Error response:', err.response);
+    console.error('Error command:', err.command);
     
     // Provide more specific error message
     let errorMessage = 'Failed to send email: ';
-    if (error.code === 'EAUTH') {
+    if (err.code === 'EAUTH') {
       errorMessage += 'Authentication failed. Check username/password.';
-    } else if (error.code === 'ECONNECTION') {
+    } else if (err.code === 'ECONNECTION') {
       errorMessage += 'Connection failed. Check host/port settings.';
-    } else if (error.code === 'ETIMEDOUT') {
+    } else if (err.code === 'ETIMEDOUT') {
       errorMessage += 'Connection timeout. Server may be unreachable.';
     } else {
-      errorMessage += error.message || 'Unknown error';
+      errorMessage += err.message || 'Unknown error';
     }
     
     throw new Error(errorMessage);

@@ -9,8 +9,8 @@ export default function TestEmailPage() {
     success?: boolean;
     message?: string;
     error?: string;
-    details?: any;
-    diagnostics?: any;
+    details?: string | Record<string, unknown>;
+    diagnostics?: Record<string, unknown>;
   } | null>(null);
 
   const handleTest = async () => {
@@ -114,23 +114,28 @@ export default function TestEmailPage() {
                         <dl className="space-y-1 text-sm">
                           <div className="flex gap-2">
                             <dt className="font-medium">Host:</dt>
-                            <dd className="text-muted-foreground">{result.diagnostics.host || 'Not set'}</dd>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <dd className="text-muted-foreground">{(result.diagnostics as any).host || 'Not set'}</dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="font-medium">Port:</dt>
-                            <dd className="text-muted-foreground">{result.diagnostics.port || 'Not set'}</dd>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <dd className="text-muted-foreground">{(result.diagnostics as any).port || 'Not set'}</dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="font-medium">Username:</dt>
-                            <dd className="text-muted-foreground">{result.diagnostics.username || 'Not set'}</dd>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <dd className="text-muted-foreground">{(result.diagnostics as any).username || 'Not set'}</dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="font-medium">From:</dt>
-                            <dd className="text-muted-foreground">{result.diagnostics.from || 'Not set'}</dd>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <dd className="text-muted-foreground">{(result.diagnostics as any).from || 'Not set'}</dd>
                           </div>
                           <div className="flex gap-2">
                             <dt className="font-medium">Password:</dt>
-                            <dd className="text-muted-foreground">{result.diagnostics.hasPassword ? '✓ Set' : '✗ Not set'}</dd>
+                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                            <dd className="text-muted-foreground">{(result.diagnostics as any).hasPassword ? '✓ Set' : '✗ Not set'}</dd>
                           </div>
                         </dl>
                       </div>
@@ -145,7 +150,7 @@ export default function TestEmailPage() {
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• Make sure all environment variables are set in Vercel</li>
                 <li>• Try using the full email address as username (e.g., timebank@studiox.tech)</li>
-                <li>• Check that the password doesn't contain special characters that need escaping</li>
+                <li>• Check that the password doesn&apos;t contain special characters that need escaping</li>
                 <li>• Verify SPF records are set up for your domain</li>
                 <li>• Check Vercel function logs for detailed error messages</li>
               </ul>
