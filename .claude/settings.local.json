@@ -20,7 +20,8 @@
       "Bash(vercel env add:*)",
       "Bash(vercel:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

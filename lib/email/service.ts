@@ -1,4 +1,5 @@
 import { Timebank, Client } from '@/types';
+import nodemailer from 'nodemailer';
 
 export interface EmailOptions {
   to: string[];
@@ -32,9 +33,6 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     console.log('Subject:', options.subject);
     console.log('From:', process.env.EMAIL_FROM);
     console.log('========================');
-    
-    // Use eval to require nodemailer to avoid Next.js bundling issues
-    const nodemailer = eval('require')('nodemailer');
     
     const port = parseInt(process.env.EMAIL_PORT || '587');
     const isSecurePort = port === 465;
