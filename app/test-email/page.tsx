@@ -1,10 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Mail, Loader2 } from 'lucide-react';
 
 export default function TestEmailPage() {
   const [email, setEmail] = useState('');
@@ -48,59 +44,47 @@ export default function TestEmailPage() {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Mail className="h-6 w-6" />
-              Email Configuration Test
-            </CardTitle>
-            <CardDescription>
+        <div className="bg-card rounded-lg shadow-lg border">
+          <div className="p-6 border-b">
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              📧 Email Configuration Test
+            </h1>
+            <p className="text-muted-foreground mt-2">
               Test your SMTP email configuration for the Timebank system
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </p>
+          </div>
+          <div className="p-6 space-y-4">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 Test Email Address
               </label>
               <div className="flex gap-2">
-                <Input
+                <input
                   id="email"
                   type="email"
                   placeholder="your-email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1"
+                  className="flex-1 px-3 py-2 bg-background border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 />
-                <Button 
+                <button 
                   onClick={handleTest} 
                   disabled={loading}
-                  className="bg-primary hover:bg-primary/90"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    'Send Test Email'
-                  )}
-                </Button>
+                  {loading ? 'Sending...' : 'Send Test Email'}
+                </button>
               </div>
             </div>
 
             {result && (
               <div className={`p-4 rounded-lg border ${
                 result.success 
-                  ? 'bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800' 
-                  : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'
+                  ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' 
+                  : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
               }`}>
                 <div className="flex items-start gap-2">
-                  {result.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
-                  )}
+                  <span className="text-xl">{result.success ? '✅' : '❌'}</span>
                   <div className="flex-1">
                     <p className={`font-medium ${
                       result.success 
@@ -116,7 +100,7 @@ export default function TestEmailPage() {
                             {result.details}
                           </p>
                         ) : (
-                          <pre className={`whitespace-pre-wrap ${
+                          <pre className={`whitespace-pre-wrap font-mono text-xs ${
                             result.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
                           }`}>
                             {JSON.stringify(result.details, null, 2)}
@@ -125,7 +109,7 @@ export default function TestEmailPage() {
                       </div>
                     )}
                     {result.diagnostics && (
-                      <div className="mt-3 p-3 bg-background rounded border">
+                      <div className="mt-3 p-3 bg-background dark:bg-gray-900 rounded border">
                         <p className="font-medium text-sm mb-2">Diagnostics:</p>
                         <dl className="space-y-1 text-sm">
                           <div className="flex gap-2">
@@ -156,7 +140,7 @@ export default function TestEmailPage() {
               </div>
             )}
 
-            <div className="mt-6 p-4 bg-muted rounded-lg">
+            <div className="mt-6 p-4 bg-muted dark:bg-gray-800 rounded-lg">
               <h3 className="font-medium text-sm mb-2">Troubleshooting Tips:</h3>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• Make sure all environment variables are set in Vercel</li>
@@ -166,8 +150,8 @@ export default function TestEmailPage() {
                 <li>• Check Vercel function logs for detailed error messages</li>
               </ul>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
