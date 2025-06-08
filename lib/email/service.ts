@@ -78,49 +78,54 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
         connectionTimeout: 30000, // 30 seconds
         greetingTimeout: 30000, // 30 seconds
         socketTimeout: 30000, // 30 seconds
-        logger: true, // Enable logging
-        debug: true, // Enable debug output
+        logger: false, // Disable verbose logging in production
+        debug: false, // Disable debug output in production
       });
     };
     
     // First try with the configured username
     transporter = createTransporter(process.env.EMAIL_USER!);
 
-    // Verify transporter configuration
-    try {
-      console.log('Verifying email configuration...');
-      await transporter.verify();
-      console.log('Email configuration verified successfully');
-    } catch (verifyError) {
-      console.error('Email configuration verification failed:', verifyError);
-      
-      // If authentication failed and we used short username, try with full email
-      const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
-      if (errorMessage.includes('auth') || errorMessage.includes('535')) {
-        console.log('Authentication failed, trying alternative username formats...');
+    // Skip verification for SendGrid (it doesn't support the verify method)
+    if (process.env.EMAIL_HOST !== 'smtp.sendgrid.net') {
+      // Verify transporter configuration for other providers
+      try {
+        console.log('Verifying email configuration...');
+        await transporter.verify();
+        console.log('Email configuration verified successfully');
+      } catch (verifyError) {
+        console.error('Email configuration verification failed:', verifyError);
         
-        // Try different username formats
-        const usernamesToTry = [
-          process.env.EMAIL_FROM, // timebank@studiox.tech
-          `${process.env.EMAIL_USER}@studiox.tech`, // studioxtech10@studiox.tech
-          `${process.env.EMAIL_USER}@domeneshop.no`, // studioxtech10@domeneshop.no
-        ];
-        
-        for (const altUsername of usernamesToTry) {
-          if (altUsername && altUsername !== process.env.EMAIL_USER) {
-            console.log(`Trying username: ${altUsername}`);
-            transporter = createTransporter(altUsername);
-            
-            try {
-              await transporter.verify();
-              console.log(`Email configuration verified successfully with username: ${altUsername}`);
-              break; // Success, stop trying
-            } catch (altError) {
-              console.error(`Failed with ${altUsername}:`, altError instanceof Error ? altError.message : altError);
+        // If authentication failed and we used short username, try with full email
+        const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
+        if (errorMessage.includes('auth') || errorMessage.includes('535')) {
+          console.log('Authentication failed, trying alternative username formats...');
+          
+          // Try different username formats
+          const usernamesToTry = [
+            process.env.EMAIL_FROM, // timebank@studiox.tech
+            `${process.env.EMAIL_USER}@studiox.tech`, // studioxtech10@studiox.tech
+            `${process.env.EMAIL_USER}@domeneshop.no`, // studioxtech10@domeneshop.no
+          ];
+          
+          for (const altUsername of usernamesToTry) {
+            if (altUsername && altUsername !== process.env.EMAIL_USER) {
+              console.log(`Trying username: ${altUsername}`);
+              transporter = createTransporter(altUsername);
+              
+              try {
+                await transporter.verify();
+                console.log(`Email configuration verified successfully with username: ${altUsername}`);
+                break; // Success, stop trying
+              } catch (altError) {
+                console.error(`Failed with ${altUsername}:`, altError instanceof Error ? altError.message : altError);
+              }
             }
           }
         }
       }
+    } else {
+      console.log('Using SendGrid - skipping verification');
     }
     
     console.log('Sending email...');
