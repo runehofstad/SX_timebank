@@ -32,7 +32,7 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if true; // Allow registration
+      allow create: if isAuthenticated() && request.auth.uid == userId; // Allow users to create their own profile
       allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow delete: if isAdmin();
     }
