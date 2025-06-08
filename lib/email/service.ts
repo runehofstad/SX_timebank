@@ -42,6 +42,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     
     const createTransporter = (username: string) => {
       console.log(`Creating transporter with username: ${username}`);
+      console.log(`Using password: ${process.env.EMAIL_PASSWORD ? '***' + process.env.EMAIL_PASSWORD.slice(-4) : 'NOT SET'}`);
       return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: port,
@@ -79,16 +80,29 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       
       // If authentication failed and we used short username, try with full email
       const errorMessage = verifyError instanceof Error ? verifyError.message : String(verifyError);
-      if (errorMessage.includes('auth') && process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('@')) {
-        console.log('Authentication failed with short username, trying with full email format...');
-        const fullEmail = process.env.EMAIL_FROM || `${process.env.EMAIL_USER}@studiox.tech`;
-        transporter = createTransporter(fullEmail);
+      if (errorMessage.includes('auth') || errorMessage.includes('535')) {
+        console.log('Authentication failed, trying alternative username formats...');
         
-        try {
-          await transporter.verify();
-          console.log('Email configuration verified successfully with full email username');
-        } catch (secondError) {
-          console.error('Email configuration verification failed with full email too:', secondError);
+        // Try different username formats
+        const usernamesToTry = [
+          process.env.EMAIL_FROM, // timebank@studiox.tech
+          `${process.env.EMAIL_USER}@studiox.tech`, // studioxtech10@studiox.tech
+          `${process.env.EMAIL_USER}@domeneshop.no`, // studioxtech10@domeneshop.no
+        ];
+        
+        for (const altUsername of usernamesToTry) {
+          if (altUsername && altUsername !== process.env.EMAIL_USER) {
+            console.log(`Trying username: ${altUsername}`);
+            transporter = createTransporter(altUsername);
+            
+            try {
+              await transporter.verify();
+              console.log(`Email configuration verified successfully with username: ${altUsername}`);
+              break; // Success, stop trying
+            } catch (altError) {
+              console.error(`Failed with ${altUsername}:`, altError instanceof Error ? altError.message : altError);
+            }
+          }
         }
       }
     }
