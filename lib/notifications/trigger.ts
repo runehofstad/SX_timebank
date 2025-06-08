@@ -1,4 +1,4 @@
-import { Timebank } from '@/types';
+// import { Timebank } from '@/types';
 
 export async function checkTimebankNotifications(timebankId?: string) {
   try {

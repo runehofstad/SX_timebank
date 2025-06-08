@@ -4,12 +4,10 @@ import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function AdminUpgradePage() {
   const { userProfile, currentUser } = useAuth();
-  const router = useRouter();
   const [upgrading, setUpgrading] = useState(false);
 
   const handleUpgrade = async () => {
@@ -43,9 +41,9 @@ export default function AdminUpgradePage() {
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 1000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error upgrading to admin:', error);
-      alert(`Failed to upgrade to admin: ${error.message || 'Unknown error'}`);
+      alert(`Failed to upgrade to admin: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUpgrading(false);
     }

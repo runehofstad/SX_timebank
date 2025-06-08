@@ -126,7 +126,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
             Accept Invitation
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-muted-foreground">
-            You've been invited to join as a {invitation.role.replace('_', ' ')}
+            You&apos;ve been invited to join as a {invitation.role.replace('_', ' ')}
           </p>
         </div>
         

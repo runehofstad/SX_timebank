@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 
 export default function CreateProfilePage() {
   const { currentUser } = useAuth();
-  const router = useRouter();
   const [creating, setCreating] = useState(false);
   const [profileExists, setProfileExists] = useState<boolean | null>(null);
   const [name, setName] = useState('');
@@ -61,9 +59,9 @@ export default function CreateProfilePage() {
       } else {
         throw new Error('Profile creation failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating profile:', error);
-      alert(`Failed to create profile: ${error.message}`);
+      alert(`Failed to create profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setCreating(false);
     }

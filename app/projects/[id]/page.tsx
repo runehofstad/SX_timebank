@@ -24,7 +24,7 @@ import {
   X,
   FileDown
 } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, parse } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { Dialog, Transition } from '@headlessui/react';
 import { WorkCategory } from '@/types';
@@ -32,13 +32,14 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // Helper function to convert Firestore timestamps to Date
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const toDate = (timestamp: any): Date => {
   if (!timestamp) return new Date();
   if (timestamp instanceof Date) return timestamp;
   if (timestamp instanceof Timestamp) return timestamp.toDate();
   if (timestamp.toDate && typeof timestamp.toDate === 'function') return timestamp.toDate();
   if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
-  return new Date(timestamp);
+  return new Date();
 };
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
@@ -323,6 +324,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     try {
       const timebankRef = doc(db, 'timebanks', editingTimebank.id);
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: any = {
         name: editTimebankFormData.name,
         description: editTimebankFormData.description || null,
@@ -439,6 +441,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   // Export to PDF function
   const exportToPDF = () => {
+    if (!project) return;
+    
     const doc = new jsPDF();
     
     // Add logo/header
@@ -778,7 +782,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           if (timebank.expiryDate) {
                             const expiryDate = timebank.expiryDate instanceof Date 
                               ? timebank.expiryDate 
-                              : timebank.expiryDate.toDate();
+                              : toDate(timebank.expiryDate);
                             const today = new Date();
                             daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                             isExpiring = daysUntilExpiry <= 30;
@@ -795,12 +799,6 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                                     {formatHours(timebank.remainingHours)} of {formatHours(timebank.totalHours)} hours remaining
                                   </p>
-                                  {timebank.lastTopUpDate && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                      Last top-up: {format(toDate(timebank.lastTopUpDate), 'MMM dd, yyyy')} 
-                                      {timebank.lastTopUpAmount && ` (+${formatHours(timebank.lastTopUpAmount)} hours)`}
-                                    </p>
-                                  )}
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {userProfile?.role === 'admin' && (
@@ -1309,7 +1307,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
                             placeholder={`e.g., ${project.name} ${timebanks.length + 1}`}
                           />
-                          <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">Leave blank to auto-generate: "{project.name} {timebanks.length + 1}"</p>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">Leave blank to auto-generate: &quot;{project.name} {timebanks.length + 1}&quot;</p>
                         </div>
 
                         <div>

@@ -12,7 +12,7 @@ type FilterType = 'alphabetic' | 'balance-low-high' | 'balance-high-low' | 'acti
 
 interface ClientWithBalance extends Client {
   totalBalance?: number;
-  lastActivity?: Date;
+  lastActivity?: Date | null;
 }
 
 export default function ClientsPage() {
@@ -43,7 +43,7 @@ export default function ClientsPage() {
       setFilteredClients([]);
       return;
     }
-    let sorted = [...clientsList];
+    const sorted = [...clientsList];
     
     switch (filter) {
       case 'alphabetic':
@@ -95,7 +95,7 @@ export default function ClientsPage() {
           
           // Get last activity (most recent timebank update)
           const lastActivity = timebanks.reduce((latest, tb) => {
-            const tbDate = tb.updatedAt ? (tb.updatedAt as any).toDate() : null;
+            const tbDate = tb.updatedAt ? (tb.updatedAt instanceof Date ? tb.updatedAt : (tb.updatedAt as { toDate: () => Date }).toDate()) : null;
             return tbDate && (!latest || tbDate > latest) ? tbDate : latest;
           }, null as Date | null);
           

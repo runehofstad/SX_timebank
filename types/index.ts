@@ -24,6 +24,7 @@ export interface Timebank {
   id: string;
   clientId: string;
   name: string;
+  description?: string;
   totalHours: number;
   usedHours: number;
   remainingHours: number;
@@ -79,7 +80,7 @@ export interface EmailNotification {
   id: string;
   clientId: string;
   timebankId: string;
-  type: 'low_hours' | 'depleted' | 'expiring_soon';
+  type: 'low_hours' | 'critical_hours' | 'depleted' | 'expiring_soon';
   sentAt: Date;
   sentTo: string[];
 }

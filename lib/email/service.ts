@@ -25,33 +25,79 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       to: options.to.join(', ')
     });
     
-    // Check if we're in development mode
-    if (process.env.NODE_ENV === 'development' && process.env.EMAIL_HOST === 'smtp.gmail.com') {
-      // In development, just log the email instead of sending it
-      console.log('=== DEVELOPMENT MODE: Email would be sent ===');
-      console.log('To:', options.to.join(', '));
-      console.log('Subject:', options.subject);
-      console.log('From:', process.env.EMAIL_FROM);
-      console.log('Text:', options.text?.substring(0, 200) + '...');
-      console.log('===========================================');
-      
-      // Simulate successful send
-      return;
-    }
+    // Log email attempt in all environments
+    console.log('=== Email Send Attempt ===');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('To:', options.to.join(', '));
+    console.log('Subject:', options.subject);
+    console.log('From:', process.env.EMAIL_FROM);
+    console.log('========================');
     
     // Use eval to require nodemailer to avoid Next.js bundling issues
     const nodemailer = eval('require')('nodemailer');
     
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT || '587'),
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
+    const port = parseInt(process.env.EMAIL_PORT || '587');
+    const isSecurePort = port === 465;
+    
+    // Try to create transporter with current username format
+    let transporter;
+    let authError = null;
+    
+    const createTransporter = (username: string) => {
+      console.log(`Creating transporter with username: ${username}`);
+      return nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: port,
+        secure: isSecurePort, // true for 465, false for other ports
+        auth: {
+          user: username,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+        tls: {
+          // Do not fail on invalid certs
+          rejectUnauthorized: false,
+          // Force TLS version 1.2
+          minVersion: 'TLSv1.2',
+        },
+        // Additional options for better compatibility
+        requireTLS: !isSecurePort, // Require STARTTLS for non-secure ports
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000, // 30 seconds
+        socketTimeout: 30000, // 30 seconds
+        logger: true, // Enable logging
+        debug: true, // Enable debug output
+      });
+    };
+    
+    // First try with the configured username
+    transporter = createTransporter(process.env.EMAIL_USER!);
 
+    // Verify transporter configuration
+    try {
+      console.log('Verifying email configuration...');
+      await transporter.verify();
+      console.log('Email configuration verified successfully');
+    } catch (verifyError: any) {
+      console.error('Email configuration verification failed:', verifyError);
+      authError = verifyError;
+      
+      // If authentication failed and we used short username, try with full email
+      if (verifyError.message?.includes('auth') && process.env.EMAIL_USER && !process.env.EMAIL_USER.includes('@')) {
+        console.log('Authentication failed with short username, trying with full email format...');
+        const fullEmail = process.env.EMAIL_FROM || `${process.env.EMAIL_USER}@studiox.tech`;
+        transporter = createTransporter(fullEmail);
+        
+        try {
+          await transporter.verify();
+          console.log('Email configuration verified successfully with full email username');
+          authError = null; // Clear the error since it worked
+        } catch (secondError) {
+          console.error('Email configuration verification failed with full email too:', secondError);
+          authError = secondError;
+        }
+      }
+    }
+    
     console.log('Sending email...');
     const result = await transporter.sendMail({
       from: process.env.EMAIL_FROM,
@@ -59,12 +105,38 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       subject: options.subject,
       html: options.html,
       text: options.text,
+      // Add message headers for better deliverability
+      headers: {
+        'X-Priority': '3',
+        'X-Mailer': 'STUDIO X Timebank System',
+      },
     });
     
-    console.log('Email sent successfully:', result.messageId);
-  } catch (error) {
+    console.log('Email sent successfully:', {
+      messageId: result.messageId,
+      accepted: result.accepted,
+      rejected: result.rejected,
+      response: result.response
+    });
+  } catch (error: any) {
     console.error('Error sending email:', error);
-    throw error;
+    console.error('Error type:', error.code);
+    console.error('Error response:', error.response);
+    console.error('Error command:', error.command);
+    
+    // Provide more specific error message
+    let errorMessage = 'Failed to send email: ';
+    if (error.code === 'EAUTH') {
+      errorMessage += 'Authentication failed. Check username/password.';
+    } else if (error.code === 'ECONNECTION') {
+      errorMessage += 'Connection failed. Check host/port settings.';
+    } else if (error.code === 'ETIMEDOUT') {
+      errorMessage += 'Connection timeout. Server may be unreachable.';
+    } else {
+      errorMessage += error.message || 'Unknown error';
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 

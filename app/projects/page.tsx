@@ -7,7 +7,7 @@ import { db } from '@/lib/firebase/config';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
 import { Project, Client, User } from '@/types';
-import { Plus, Edit2, Trash2, X, Users, Search, Filter, Clock, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Users, Search, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProjectsPage() {

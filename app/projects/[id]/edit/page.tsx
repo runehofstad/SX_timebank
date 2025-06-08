@@ -8,12 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
 import { Project, Client, User } from '@/types';
-import { ArrowLeft, Save, X, UserPlus, UserMinus } from 'lucide-react';
+import { ArrowLeft, Save, UserPlus, UserMinus } from 'lucide-react';
 
 export default function EditProjectPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { userProfile } = useAuth();
-  const [project, setProject] = useState<Project | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +43,6 @@ export default function EditProjectPage({ params }: { params: { id: string } }) 
       }
       
       const projectData = { id: projectDoc.id, ...projectDoc.data() } as Project;
-      setProject(projectData);
       setFormData({
         name: projectData.name,
         description: projectData.description || '',

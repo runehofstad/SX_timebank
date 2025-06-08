@@ -8,7 +8,6 @@ import {
   Home, 
   Users, 
   Briefcase, 
-  Clock, 
   FolderOpen, 
   Settings, 
   LogOut,

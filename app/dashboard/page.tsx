@@ -6,9 +6,9 @@ import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
-import { DashboardStats, Timebank, Project, Client, TimeEntry, WorkCategory } from '@/types';
-import { Users, Clock, FolderOpen, AlertTriangle, Filter, ArrowUpDown, DollarSign, Activity, Plus, X } from 'lucide-react';
-import { calculateTimebankStatus, formatHours, workCategories, getCategoryLabel } from '@/utils/timebank';
+import { DashboardStats, Timebank, Project, Client, WorkCategory } from '@/types';
+import { Users, Clock, FolderOpen, AlertTriangle, Filter, ArrowUpDown, DollarSign, Activity, X } from 'lucide-react';
+import { formatHours, workCategories } from '@/utils/timebank';
 import { useRouter } from 'next/navigation';
 import { Dialog, Transition } from '@headlessui/react';
 import { format, isWithinInterval, addDays } from 'date-fns';
@@ -129,7 +129,7 @@ export default function DashboardPage() {
         projects = allProjects.filter(p => p.status === 'active');
         
         // Get unique client IDs from user's projects
-        const userClientIds = [...new Set(allProjects.map(p => p.clientId))];
+        const userClientIds = Array.from(new Set(allProjects.map(p => p.clientId)));
         
         // Fetch only relevant clients
         const clientsSnapshot = await getDocs(collection(db, 'clients'));
@@ -171,16 +171,20 @@ export default function DashboardPage() {
           const activeTimebank = clientTimebanks.find(tb => tb.status === 'active');
           
           // Calculate based on the active timebank's current state
+          let totalHours: number;
+          let usedHours: number;
+          let remainingHours: number;
+          
           if (activeTimebank) {
             // For active timebank: use its actual values
-            var totalHours = activeTimebank.totalHours;
-            var usedHours = activeTimebank.usedHours;
-            var remainingHours = activeTimebank.remainingHours;
+            totalHours = activeTimebank.totalHours;
+            usedHours = activeTimebank.usedHours;
+            remainingHours = activeTimebank.remainingHours;
           } else {
             // Legacy support: sum all timebanks
-            var totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
-            var usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
-            var remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
+            totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
+            usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
+            remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
           }
           
           // Check if timebank is expiring soon (within 30 days)
@@ -189,7 +193,7 @@ export default function DashboardPage() {
           if (activeTimebank && activeTimebank.expiryDate) {
             const expiryDate = activeTimebank.expiryDate instanceof Date 
               ? activeTimebank.expiryDate 
-              : activeTimebank.expiryDate.toDate();
+              : (activeTimebank.expiryDate as { toDate: () => Date }).toDate();
             const today = new Date();
             const thirtyDaysFromNow = addDays(today, 30);
             
@@ -469,7 +473,7 @@ export default function DashboardPage() {
                                 : 'Warning: Less than 50% hours remaining'}
                             </div>
                           )}
-                          {project.isExpiringSoon && project.daysUntilExpiry !== null && (
+                          {project.isExpiringSoon && project.daysUntilExpiry !== null && project.daysUntilExpiry !== undefined && (
                             <div className="flex items-center text-sm text-orange-600">
                               <Clock className="h-4 w-4 mr-1" />
                               {project.daysUntilExpiry <= 0 

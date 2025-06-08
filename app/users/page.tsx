@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
 import { User, Department } from '@/types';
-import { Plus, Edit2, Trash2, X, Mail, UserPlus } from 'lucide-react';
+import { Edit2, Trash2, X, Mail, UserPlus } from 'lucide-react';
 
 export default function UsersPage() {
   const { userProfile } = useAuth();
@@ -108,12 +108,13 @@ export default function UsersPage() {
         department: 'developer_team',
       });
       setShowInviteModal(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error sending invitation:', error);
-      if (error.code === 'permission-denied') {
+      if (error?.code === 'permission-denied') {
         alert('You do not have permission to send invitations. Only admins and project managers can invite new users.');
       } else {
-        alert(`Failed to send invitation: ${error.message || 'Unknown error'}`);
+        alert(`Failed to send invitation: ${error?.message || 'Unknown error'}`);
       }
     }
   };

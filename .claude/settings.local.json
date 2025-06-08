@@ -11,7 +11,15 @@
       "Bash(./update-dark-mode.sh:*)",
       "Bash(rm:*)",
       "Bash(grep:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(firebase --version)",
+      "Bash(vercel logs:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

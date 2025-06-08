@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { Timebank, TimeEntry, Project, Client } from '@/types';
-import { Clock, Calendar, FolderOpen, TrendingDown } from 'lucide-react';
+import { Clock, FolderOpen, TrendingDown } from 'lucide-react';
 import { calculateTimebankStatus, getStatusColor, formatHours } from '@/utils/timebank';
 import { format } from 'date-fns';
 
@@ -141,7 +141,7 @@ export default function ClientPortalPage() {
                   />
                 </div>
                 <p className="mt-2 text-xs text-gray-500 dark:text-muted-foreground">
-                  Contact your project manager if you don't have an access code
+                  Contact your project manager if you don&apos;t have an access code
                 </p>
               </div>
 
