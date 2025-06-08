@@ -43,6 +43,22 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     const createTransporter = (username: string) => {
       console.log(`Creating transporter with username: ${username}`);
       console.log(`Using password: ${process.env.EMAIL_PASSWORD ? '***' + process.env.EMAIL_PASSWORD.slice(-4) : 'NOT SET'}`);
+      
+      // Special handling for SendGrid
+      if (process.env.EMAIL_HOST === 'smtp.sendgrid.net') {
+        console.log('Using SendGrid configuration');
+        return nodemailer.createTransport({
+          host: process.env.EMAIL_HOST,
+          port: port,
+          secure: false, // SendGrid uses STARTTLS
+          auth: {
+            user: 'apikey', // SendGrid requires literal string 'apikey' as username
+            pass: process.env.EMAIL_PASSWORD, // This should be your SendGrid API key
+          },
+        });
+      }
+      
+      // Default configuration for other providers
       return nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: port,
