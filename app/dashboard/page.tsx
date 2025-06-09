@@ -289,20 +289,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
             {statCards.map((stat) => (
               <div
                 key={stat.name}
-                className="relative overflow-hidden rounded-lg bg-white dark:bg-card px-4 pt-5 pb-12 shadow dark:shadow-gray-800 sm:px-6 sm:pt-6"
+                className="relative overflow-hidden rounded-lg bg-white dark:bg-card px-3 py-4 sm:px-4 sm:pt-5 sm:pb-12 shadow dark:shadow-gray-800"
               >
                 <dt>
-                  <div className={`absolute rounded-md ${stat.color} p-3`}>
-                    <stat.icon className="h-6 w-6 text-white" aria-hidden="true" />
+                  <div className={`absolute rounded-md ${stat.color} p-2 sm:p-3`}>
+                    <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" aria-hidden="true" />
                   </div>
-                  <p className="ml-16 truncate text-sm font-medium text-gray-500 dark:text-muted-foreground">{stat.name}</p>
+                  <p className="ml-12 sm:ml-16 truncate text-xs sm:text-sm font-medium text-gray-500 dark:text-muted-foreground">{stat.name}</p>
                 </dt>
-                <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-foreground">{stat.value}</p>
+                <dd className="ml-12 sm:ml-16 flex items-baseline pb-2 sm:pb-6">
+                  <p className="text-lg sm:text-2xl font-semibold text-gray-900 dark:text-foreground">{stat.value}</p>
                 </dd>
               </div>
             ))}
