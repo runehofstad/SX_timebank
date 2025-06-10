@@ -321,7 +321,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     setSubmitting(true);
     try {
       const entries = Object.entries(multipleTimeFormData.weekData)
-        .filter(([_, hours]) => hours && parseFloat(hours) > 0)
+        .filter(([, hours]) => hours && parseFloat(hours) > 0)
         .map(([date, hours]) => ({
           date,
           hours: parseFloat(hours)
