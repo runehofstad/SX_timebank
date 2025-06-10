@@ -56,11 +56,21 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [showTimebankModal, setShowTimebankModal] = useState(false);
   const [showEditTimebankModal, setShowEditTimebankModal] = useState(false);
   const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
+  const [timeRegistrationMode, setTimeRegistrationMode] = useState<'default' | 'multiple'>('default');
   const [timeFormData, setTimeFormData] = useState({
     description: '',
     category: 'other' as WorkCategory,
     hours: '',
     date: format(new Date(), 'yyyy-MM-dd')
+  });
+  const [multipleTimeFormData, setMultipleTimeFormData] = useState<{
+    category: WorkCategory;
+    description: string;
+    weekData: { [key: string]: string };
+  }>({
+    category: 'other',
+    description: '',
+    weekData: {}
   });
   const [timebankFormData, setTimebankFormData] = useState(() => {
     const today = new Date();
@@ -158,6 +168,27 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     }
   };
 
+  // Helper function to get week dates
+  const getWeekDates = (baseDate: Date) => {
+    const dates = [];
+    const startOfWeek = new Date(baseDate);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    startOfWeek.setDate(diff);
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      dates.push({
+        date: format(date, 'yyyy-MM-dd'),
+        dayName: format(date, 'EEE'),
+        dayNumber: format(date, 'd'),
+        isWeekend: i >= 5
+      });
+    }
+    return dates;
+  };
+
   const handleRegisterTime = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userProfile || !project) return;
@@ -234,6 +265,101 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       await fetchProjectData();
     } catch (error) {
       console.error('Error registering time:', error);
+      alert(error instanceof Error ? error.message : 'Failed to register time');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRegisterMultipleTime = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userProfile || !project) return;
+
+    setSubmitting(true);
+    try {
+      const entries = Object.entries(multipleTimeFormData.weekData)
+        .filter(([_, hours]) => hours && parseFloat(hours) > 0)
+        .map(([date, hours]) => ({
+          date,
+          hours: parseFloat(hours)
+        }));
+
+      if (entries.length === 0) {
+        throw new Error('Please enter hours for at least one day');
+      }
+
+      // Calculate total hours needed
+      const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0);
+      
+      // Get active timebanks
+      const activeTimebanks = timebanks
+        .filter(tb => tb.status === 'active' && tb.remainingHours > 0)
+        .sort((a, b) => a.remainingHours - b.remainingHours);
+
+      if (activeTimebanks.length === 0) {
+        throw new Error('No active timebanks available for this project');
+      }
+
+      // Check if total available hours is sufficient
+      const totalAvailableHours = activeTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
+      if (totalHours > totalAvailableHours) {
+        throw new Error(`Not enough hours available. Total available: ${totalAvailableHours.toFixed(2)} hours`);
+      }
+
+      // Create time entries for each day
+      for (const entry of entries) {
+        let remainingHours = entry.hours;
+        const allocations: { timebankId: string; hours: number }[] = [];
+
+        // Allocate hours across timebanks
+        for (const timebank of activeTimebanks) {
+          if (remainingHours <= 0) break;
+
+          const hoursToAllocate = Math.min(remainingHours, timebank.remainingHours);
+          allocations.push({
+            timebankId: timebank.id,
+            hours: hoursToAllocate
+          });
+          remainingHours -= hoursToAllocate;
+        }
+
+        // Create time entries and update timebanks
+        for (const allocation of allocations) {
+          const timeEntry = {
+            userId: userProfile.id,
+            projectId: project.id,
+            timebankId: allocation.timebankId,
+            description: multipleTimeFormData.description,
+            category: multipleTimeFormData.category,
+            hours: allocation.hours,
+            date: new Date(entry.date),
+            status: 'approved',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          await addDoc(collection(db, 'timeEntries'), timeEntry);
+
+          // Update timebank hours
+          const timebankRef = doc(db, 'timebanks', allocation.timebankId);
+          await updateDoc(timebankRef, {
+            usedHours: increment(allocation.hours),
+            remainingHours: increment(-allocation.hours),
+            updatedAt: new Date()
+          });
+        }
+      }
+
+      // Reset form and refresh data
+      setMultipleTimeFormData({
+        category: 'other',
+        description: '',
+        weekData: {}
+      });
+      setShowTimeModal(false);
+      await fetchProjectData();
+    } catch (error) {
+      console.error('Error registering multiple time entries:', error);
       alert(error instanceof Error ? error.message : 'Failed to register time');
     } finally {
       setSubmitting(false);
@@ -1112,7 +1238,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                     leaveFrom="opacity-100 scale-100"
                     leaveTo="opacity-0 scale-95"
                   >
-                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
+                    <Dialog.Panel className="w-full max-w-3xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
                       <Dialog.Title
                         as="h3"
                         className="text-2xl font-semibold leading-6 text-gray-900 dark:text-foreground flex justify-between items-center mb-2"
@@ -1125,9 +1251,41 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <X className="h-6 w-6" />
                         </button>
                       </Dialog.Title>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">Record your work hours for {project.name}</p>
+                      
+                      {/* Segmented Controller */}
+                      <div className="flex bg-gray-100 dark:bg-secondary rounded-lg p-1 mb-6">
+                        <button
+                          type="button"
+                          onClick={() => setTimeRegistrationMode('default')}
+                          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                            timeRegistrationMode === 'default'
+                              ? 'bg-white dark:bg-card text-gray-900 dark:text-foreground shadow'
+                              : 'text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                        >
+                          Default
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTimeRegistrationMode('multiple')}
+                          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                            timeRegistrationMode === 'multiple'
+                              ? 'bg-white dark:bg-card text-gray-900 dark:text-foreground shadow'
+                              : 'text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                        >
+                          Multiple
+                        </button>
+                      </div>
+                      
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+                        {timeRegistrationMode === 'default' 
+                          ? `Record your work hours for ${project.name}`
+                          : `Record hours for the entire week for ${project.name}`
+                        }
+                      </p>
 
-                      <form onSubmit={handleRegisterTime} className="space-y-6">
+                      <form onSubmit={timeRegistrationMode === 'default' ? handleRegisterTime : handleRegisterMultipleTime} className="space-y-6">
                         {/* Show available hours summary */}
                         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                           <div className="flex items-center">
@@ -1156,9 +1314,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               <button
                                 key={category.value}
                                 type="button"
-                                onClick={() => setTimeFormData({ ...timeFormData, category: category.value })}
+                                onClick={() => {
+                                  if (timeRegistrationMode === 'default') {
+                                    setTimeFormData({ ...timeFormData, category: category.value });
+                                  } else {
+                                    setMultipleTimeFormData({ ...multipleTimeFormData, category: category.value });
+                                  }
+                                }}
                                 className={`p-4 rounded-lg border-2 text-left transition-all ${
-                                  timeFormData.category === category.value
+                                  (timeRegistrationMode === 'default' ? timeFormData.category : multipleTimeFormData.category) === category.value
                                     ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x'
                                     : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
                                 }`}
@@ -1183,49 +1347,125 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              When did you work?
-                            </label>
-                            <input
-                              type="date"
-                              value={timeFormData.date}
-                              onChange={(e) => setTimeFormData({ ...timeFormData, date: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
-                              required
-                            />
-                          </div>
+                        {timeRegistrationMode === 'default' ? (
+                          <>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  When did you work?
+                                </label>
+                                <input
+                                  type="date"
+                                  value={timeFormData.date}
+                                  onChange={(e) => setTimeFormData({ ...timeFormData, date: e.target.value })}
+                                  className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                                  required
+                                />
+                              </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              How many hours?
-                            </label>
-                            <input
-                              type="number"
-                              step="0.25"
-                              min="0.25"
-                              value={timeFormData.hours}
-                              onChange={(e) => setTimeFormData({ ...timeFormData, hours: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
-                              placeholder="e.g., 2.5"
-                              required
-                            />
-                          </div>
-                        </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                  How many hours?
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.25"
+                                  min="0.25"
+                                  value={timeFormData.hours}
+                                  onChange={(e) => setTimeFormData({ ...timeFormData, hours: e.target.value })}
+                                  className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                                  placeholder="e.g., 2.5"
+                                  required
+                                />
+                              </div>
+                            </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Describe what you worked on
-                          </label>
-                          <textarea
-                            value={timeFormData.description}
-                            onChange={(e) => setTimeFormData({ ...timeFormData, description: e.target.value })}
-                            className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
-                            rows={4}
-                            placeholder="Provide a brief description of the work completed... (optional)"
-                          />
-                        </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Describe what you worked on
+                              </label>
+                              <textarea
+                                value={timeFormData.description}
+                                onChange={(e) => setTimeFormData({ ...timeFormData, description: e.target.value })}
+                                className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                                rows={4}
+                                placeholder="Provide a brief description of the work completed... (optional)"
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Multiple mode - Week grid */}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                Enter hours for each day
+                              </label>
+                              <div className="space-y-2">
+                                {getWeekDates(new Date()).map((day) => (
+                                  <div
+                                    key={day.date}
+                                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                                      day.isWeekend 
+                                        ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700' 
+                                        : 'bg-white dark:bg-card border-gray-300 dark:border-gray-600'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-3">
+                                      <div className="text-center">
+                                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                          {day.dayName}
+                                        </div>
+                                        <div className="text-lg font-semibold text-gray-900 dark:text-foreground">
+                                          {day.dayNumber}
+                                        </div>
+                                      </div>
+                                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                                        {format(new Date(day.date), 'MMM d, yyyy')}
+                                      </div>
+                                    </div>
+                                    <input
+                                      type="number"
+                                      step="0.25"
+                                      min="0"
+                                      max="24"
+                                      value={multipleTimeFormData.weekData[day.date] || ''}
+                                      onChange={(e) => setMultipleTimeFormData({
+                                        ...multipleTimeFormData,
+                                        weekData: {
+                                          ...multipleTimeFormData.weekData,
+                                          [day.date]: e.target.value
+                                        }
+                                      })}
+                                      className="w-24 px-3 py-2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-center"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="mt-3 flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Total hours for the week:</span>
+                                <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                                  {Object.values(multipleTimeFormData.weekData)
+                                    .reduce((sum, hours) => sum + (parseFloat(hours) || 0), 0)
+                                    .toFixed(2)}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Describe what you worked on this week
+                              </label>
+                              <textarea
+                                value={multipleTimeFormData.description}
+                                onChange={(e) => setMultipleTimeFormData({ ...multipleTimeFormData, description: e.target.value })}
+                                className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                                rows={4}
+                                placeholder="Provide a brief description of the work completed this week... (optional)"
+                              />
+                            </div>
+                          </>
+                        )}
 
                         <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
                           <button
@@ -1237,7 +1477,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </button>
                           <button
                             type="submit"
-                            disabled={submitting || !timeFormData.category || !timeFormData.hours}
+                            disabled={
+                              submitting || 
+                              (timeRegistrationMode === 'default' 
+                                ? !timeFormData.category || !timeFormData.hours 
+                                : !multipleTimeFormData.category || Object.values(multipleTimeFormData.weekData).every(h => !h || parseFloat(h) === 0)
+                              )
+                            }
                             className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {submitting ? 'Registering...' : 'Register Time'}
