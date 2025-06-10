@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Pull-to-refresh styles */
+@supports (-webkit-overflow-scrolling: touch) {
+  /* Disable browser's built-in pull-to-refresh on iOS */
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+
 :root {
   /* Light mode colors */
   --background: #ffffff;

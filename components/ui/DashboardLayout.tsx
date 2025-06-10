@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +15,7 @@ import {
   X
 } from 'lucide-react';
 import NotificationPermission from '@/components/ui/NotificationPermission';
+import PullToRefresh from '@/components/ui/PullToRefresh';
 
 interface NavItem {
   name: string;
@@ -41,6 +42,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     await logout();
     router.push('/login');
   };
+
+  const handleRefresh = useCallback(async () => {
+    // Force a page refresh
+    router.refresh();
+    // Wait a bit to show the refresh animation
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }, [router]);
 
   const filteredNavigation = navigation.filter(item => {
     if (!item.roles) return true;
@@ -192,11 +200,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main content */}
       <div className="md:pl-64 flex flex-col flex-1">
         <main className="flex-1">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {children}
+          <PullToRefresh onRefresh={handleRefresh}>
+            <div className="py-6">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {children}
+              </div>
             </div>
-          </div>
+          </PullToRefresh>
         </main>
       </div>
       <NotificationPermission />
