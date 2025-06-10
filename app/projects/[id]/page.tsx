@@ -3,7 +3,7 @@
 import { useState, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, updateDoc, increment, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, orderBy, addDoc, updateDoc, increment, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -24,7 +24,8 @@ import {
   X,
   FileDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
@@ -580,6 +581,20 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         : ''
     });
     setShowEditTimebankModal(true);
+  };
+
+  const handleDeleteTimebank = async (timebankId: string) => {
+    if (!window.confirm('Are you sure you want to delete this timebank? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'timebanks', timebankId));
+      await fetchProjectData();
+    } catch (error) {
+      console.error('Error deleting timebank:', error);
+      alert('Failed to delete timebank');
+    }
   };
 
   const getStatusIcon = (status: Project['status']) => {
@@ -1889,25 +1904,21 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-lg font-medium"
                               required
                             />
-                            <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">Total hours in this timebank</p>
+                            <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">Total capacity of this timebank</p>
                           </div>
 
-                          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                              <Clock className="inline h-4 w-4 mr-1" />
-                              Remaining Hours
+                              Current Status
                             </label>
-                            <input
-                              type="number"
-                              step="0.5"
-                              min="0"
-                              max={editTimebankFormData.totalHours}
-                              value={editTimebankFormData.remainingHours}
-                              onChange={(e) => setEditTimebankFormData({ ...editTimebankFormData, remainingHours: e.target.value })}
-                              className="block w-full px-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-lg font-medium"
-                              required
-                            />
-                            <p className="mt-1 text-xs text-green-700 dark:text-green-300">Hours still available</p>
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Used:</span> {formatHours(editingTimebank?.usedHours || 0)}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Remaining:</span> {formatHours(editingTimebank?.remainingHours || 0)}
+                              </p>
+                            </div>
                           </div>
                         </div>
 
@@ -1929,24 +1940,29 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <div className="flex items-start">
                             <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
                             <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                              <p className="font-medium">Important Notes:</p>
-                              <ul className="mt-1 list-disc list-inside space-y-1">
-                                <li>Changing total hours will affect percentage calculations</li>
-                                <li>Remaining hours cannot exceed total hours</li>
-                                <li>Used hours will be automatically recalculated</li>
-                              </ul>
+                              <p className="font-medium">Important Note:</p>
+                              <p className="mt-1">Changing the total hours will maintain the used hours ({formatHours(editingTimebank?.usedHours || 0)}) and automatically recalculate the remaining hours.</p>
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
+                        <div className="mt-8 flex justify-between pt-6 border-t dark:border-gray-700">
                           <button
                             type="button"
-                            onClick={() => {
-                              setShowEditTimebankModal(false);
-                              setEditingTimebank(null);
-                            }}
-                            className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
+                            onClick={() => handleDeleteTimebank(editingTimebank!.id)}
+                            className="px-6 py-3 text-base font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-red-500 transition-colors"
+                          >
+                            <Trash2 className="inline h-4 w-4 mr-2" />
+                            Delete Timebank
+                          </button>
+                          <div className="flex space-x-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowEditTimebankModal(false);
+                                setEditingTimebank(null);
+                              }}
+                              className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
                           >
                             Cancel
                           </button>
