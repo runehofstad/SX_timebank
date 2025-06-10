@@ -494,62 +494,26 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     try {
       const newHours = parseFloat(timebankFormData.totalHours);
       
-      // Check if there's an existing active timebank for this client
-      const existingActiveTimebank = timebanks.find(tb => 
-        tb.clientId === project.clientId && tb.status === 'active'
-      );
+      // Always create a new timebank - each timebank should be separate
+      const timebankName = timebankFormData.name.trim() || `${project.name} Timebank`;
       
-      if (existingActiveTimebank) {
-        // Check if timebank was negative before adding hours
-        const wasNegative = existingActiveTimebank.remainingHours < 0;
-        
-        // Add hours to existing timebank without changing the total
-        const currentRemainingHours = existingActiveTimebank.remainingHours || 0;
-        const newRemainingHours = currentRemainingHours + newHours;
-        
-        // Update the existing timebank - only update remaining hours
-        const timebankRef = doc(db, 'timebanks', existingActiveTimebank.id);
-        await updateDoc(timebankRef, {
-          remainingHours: newRemainingHours,
-          lastTopUpAmount: newHours,
-          lastTopUpDate: new Date(timebankFormData.purchaseDate),
-          expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
-          updatedAt: new Date()
-        });
-        
-        // Send push notification if timebank was negative
-        if (wasNegative && client) {
-          await triggerNotification('timebank_negative_topup', {
-            recipientId: project.clientId,
-            clientName: client.name,
-            projectName: project.name,
-            previousBalance: currentRemainingHours,
-            addedHours: newHours,
-            newBalance: newRemainingHours
-          });
-        }
-      } else {
-        // Create new timebank if none exists
-        const timebankName = timebankFormData.name.trim() || `${project.name} Timebank`;
-        
-        const timebankData = {
-          clientId: project.clientId,
-          name: timebankName,
-          description: timebankFormData.description.trim() || null,
-          totalHours: newHours,
-          usedHours: 0,
-          remainingHours: newHours,
-          lastTopUpAmount: newHours,
-          lastTopUpDate: new Date(timebankFormData.purchaseDate),
-          status: 'active',
-          purchaseDate: new Date(timebankFormData.purchaseDate),
-          expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
+      const timebankData = {
+        clientId: project.clientId,
+        name: timebankName,
+        description: timebankFormData.description.trim() || null,
+        totalHours: newHours,
+        usedHours: 0,
+        remainingHours: newHours,
+        lastTopUpAmount: newHours,
+        lastTopUpDate: new Date(timebankFormData.purchaseDate),
+        status: 'active',
+        purchaseDate: new Date(timebankFormData.purchaseDate),
+        expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-        await addDoc(collection(db, 'timebanks'), timebankData);
-      }
+      await addDoc(collection(db, 'timebanks'), timebankData);
 
       // Reset form and refresh data
       const today = new Date();

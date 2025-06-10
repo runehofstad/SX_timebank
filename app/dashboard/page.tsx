@@ -183,38 +183,34 @@ export default function DashboardPage() {
         validProjects.map(async (project) => {
           const clientTimebanks = timebanksByClient[project.clientId] || [];
           
-          // Find the active timebank (should be only one per client with new logic)
-          const activeTimebank = clientTimebanks.find(tb => tb.status === 'active');
+          // Calculate totals by summing all timebanks for the client
+          const totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
+          const usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
+          const remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
           
-          // Calculate based on the active timebank's current state
-          let totalHours: number;
-          let usedHours: number;
-          let remainingHours: number;
-          
-          if (activeTimebank) {
-            // For active timebank: use its actual values
-            totalHours = activeTimebank.totalHours;
-            usedHours = activeTimebank.usedHours;
-            remainingHours = activeTimebank.remainingHours;
-          } else {
-            // Legacy support: sum all timebanks
-            totalHours = clientTimebanks.reduce((sum, tb) => sum + tb.totalHours, 0);
-            usedHours = clientTimebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
-            remainingHours = clientTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
-          }
-          
-          // Check if timebank is expiring soon (within 30 days)
+          // Check if any timebank is expiring soon (within 30 days)
           let isExpiringSoon = false;
           let daysUntilExpiry: number | null = null;
-          if (activeTimebank && activeTimebank.expiryDate) {
-            const expiryDate = activeTimebank.expiryDate instanceof Date 
-              ? activeTimebank.expiryDate 
-              : (activeTimebank.expiryDate as { toDate: () => Date }).toDate();
-            const today = new Date();
-            const thirtyDaysFromNow = addDays(today, 30);
-            
-            isExpiringSoon = isWithinInterval(expiryDate, { start: today, end: thirtyDaysFromNow });
-            daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          
+          // Check all active timebanks for expiry
+          const activeTimebanks = clientTimebanks.filter(tb => tb.status === 'active');
+          for (const timebank of activeTimebanks) {
+            if (timebank.expiryDate) {
+              const expiryDate = timebank.expiryDate instanceof Date 
+                ? timebank.expiryDate 
+                : (timebank.expiryDate as { toDate: () => Date }).toDate();
+              const today = new Date();
+              const thirtyDaysFromNow = addDays(today, 30);
+              
+              if (isWithinInterval(expiryDate, { start: today, end: thirtyDaysFromNow })) {
+                isExpiringSoon = true;
+                const daysTillExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                // Keep the nearest expiry date
+                if (daysUntilExpiry === null || daysTillExpiry < daysUntilExpiry) {
+                  daysUntilExpiry = daysTillExpiry;
+                }
+              }
+            }
           }
           
           // Get last activity from time entries
