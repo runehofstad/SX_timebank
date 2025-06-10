@@ -885,24 +885,22 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                   <Clock className="h-4 w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Register</span> Time
                 </button>
+                <button
+                  onClick={() => setShowTimebankModal(true)}
+                  className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="sm:hidden">{timebanks.some(tb => tb.status === 'active') ? 'Hours' : 'Timebank'}</span>
+                  <span className="hidden sm:inline">{timebanks.some(tb => tb.status === 'active') ? 'Add Hours' : 'Add Timebank'}</span>
+                </button>
                 {userProfile?.role === 'admin' && (
-                  <>
-                    <button
-                      onClick={() => setShowTimebankModal(true)}
-                      className="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                    >
-                      <Plus className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="sm:hidden">{timebanks.some(tb => tb.status === 'active') ? 'Hours' : 'Timebank'}</span>
-                      <span className="hidden sm:inline">{timebanks.some(tb => tb.status === 'active') ? 'Add Hours' : 'Add Timebank'}</span>
-                    </button>
-                    <Link
-                      href={`/projects/${project.id}/edit`}
-                      className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x"
-                    >
-                      <Edit className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Edit</span> <span className="sm:hidden">Edit</span>
-                    </Link>
-                  </>
+                  <Link
+                    href={`/projects/${project.id}/edit`}
+                    className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x"
+                  >
+                    <Edit className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Edit</span> <span className="sm:hidden">Edit</span>
+                  </Link>
                 )}
               </div>
             </div>
