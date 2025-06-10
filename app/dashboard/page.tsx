@@ -141,10 +141,29 @@ export default function DashboardPage() {
       
       // Calculate stats
       const totalClients = Object.keys(clients).length;
-      const activeTimebanks = timebanks.filter(tb => tb.status === 'active').length;
-      const totalHoursAvailable = timebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
-      const totalHoursUsed = timebanks.reduce((sum, tb) => sum + tb.usedHours, 0);
+      const activeTimebanksList = timebanks.filter(tb => tb.status === 'active');
+      const activeTimebanks = activeTimebanksList.length;
+      const totalHoursAvailable = activeTimebanksList.reduce((sum, tb) => {
+        // Only count positive remaining hours for available hours
+        const remainingHours = tb.remainingHours || 0;
+        return sum + Math.max(0, remainingHours);
+      }, 0);
+      const totalHoursUsed = timebanks.reduce((sum, tb) => sum + (tb.usedHours || 0), 0);
       const projectsInProgress = projects.length;
+      
+      // Debug logging
+      console.log('Dashboard Stats Debug:', {
+        totalTimebanks: timebanks.length,
+        activeTimebanks,
+        activeTimebanksList: activeTimebanksList.map(tb => ({ 
+          id: tb.id, 
+          name: tb.name, 
+          remainingHours: tb.remainingHours 
+        })),
+        totalHoursAvailable,
+        totalHoursFromAllTimebanks: timebanks.reduce((sum, tb) => sum + (tb.remainingHours || 0), 0),
+        timebankStatuses: timebanks.map(tb => ({ id: tb.id, name: tb.name, status: tb.status }))
+      });
       
       // Group timebanks by clientId
       const timebanksByClient = timebanks.reduce((acc, tb) => {

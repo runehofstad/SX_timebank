@@ -116,6 +116,31 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [filterCategory, setFilterCategory] = useState<WorkCategory | 'all'>('all');
   const [filterUser, setFilterUser] = useState<string>('all');
   const [filterDepartment, setFilterDepartment] = useState<string>('all');
+  
+  // Edit time entry states
+  const [showEditTimeModal, setShowEditTimeModal] = useState(false);
+  const [editingTimeEntry, setEditingTimeEntry] = useState<TimeEntry | null>(null);
+  const [editTimeFormData, setEditTimeFormData] = useState({
+    description: '',
+    category: '' as WorkCategory,
+    hours: '',
+    date: ''
+  });
+  
+  // Export states
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showExportDropdown && !(event.target as HTMLElement).closest('.export-dropdown')) {
+        setShowExportDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExportDropdown]);
 
   useEffect(() => {
     if (params.id) {
@@ -822,6 +847,139 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     doc.save(fileName);
   };
 
+  // Export to CSV function
+  const exportToCSV = () => {
+    if (!project) return;
+    
+    // Prepare CSV headers
+    const headers = ['Date', 'Category', 'Description', 'User', 'Hours', 'Status'];
+    
+    // Prepare CSV rows
+    const rows = filteredTimeEntries.map(entry => {
+      const user = teamMembers.find(m => m.id === entry.userId);
+      return [
+        entry.date ? format(toDate(entry.date), 'yyyy-MM-dd') : 'N/A',
+        entry.category ? getCategoryLabel(entry.category) : 'Other',
+        entry.description,
+        user?.name || 'Unknown',
+        entry.hours.toString(),
+        entry.status
+      ];
+    });
+    
+    // Add total row
+    rows.push(['', '', '', 'Total Hours:', filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0).toString(), '']);
+    
+    // Convert to CSV format
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    const fileName = `${project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_timesheet_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Handle edit time entry
+  const handleEditTimeEntry = (entry: TimeEntry) => {
+    setEditingTimeEntry(entry);
+    setEditTimeFormData({
+      description: entry.description,
+      category: entry.category,
+      hours: entry.hours.toString(),
+      date: format(toDate(entry.date), 'yyyy-MM-dd')
+    });
+    setShowEditTimeModal(true);
+  };
+
+  // Handle update time entry
+  const handleUpdateTimeEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTimeEntry || !project) return;
+
+    setSubmitting(true);
+    try {
+      const newHours = parseFloat(editTimeFormData.hours);
+      const hoursDifference = newHours - editingTimeEntry.hours;
+
+      const updatedData = {
+        description: editTimeFormData.description,
+        category: editTimeFormData.category,
+        hours: newHours,
+        date: new Date(editTimeFormData.date),
+        updatedAt: new Date()
+      };
+
+      // Update the time entry
+      await updateDoc(doc(db, 'time_entries', editingTimeEntry.id), updatedData);
+      
+      // Update the timebank hours if there's a difference
+      if (hoursDifference !== 0) {
+        const timebankRef = doc(db, 'timebanks', editingTimeEntry.timebankId);
+        await updateDoc(timebankRef, {
+          usedHours: increment(hoursDifference),
+          remainingHours: increment(-hoursDifference),
+          updatedAt: new Date()
+        });
+      }
+      
+      setShowEditTimeModal(false);
+      setEditingTimeEntry(null);
+      setEditTimeFormData({
+        description: '',
+        category: '' as WorkCategory,
+        hours: '',
+        date: ''
+      });
+      
+      await fetchProjectData();
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      alert('Failed to update time entry');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle delete time entry
+  const handleDeleteTimeEntry = async (entryId: string) => {
+    if (!window.confirm('Are you sure you want to delete this time entry? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      // Get the time entry details first
+      const entryToDelete = timeEntries.find(e => e.id === entryId);
+      if (!entryToDelete) return;
+
+      // Delete the time entry
+      await deleteDoc(doc(db, 'time_entries', entryId));
+
+      // Update the timebank to restore the hours
+      const timebankRef = doc(db, 'timebanks', entryToDelete.timebankId);
+      await updateDoc(timebankRef, {
+        usedHours: increment(-entryToDelete.hours),
+        remainingHours: increment(entryToDelete.hours),
+        updatedAt: new Date()
+      });
+
+      await fetchProjectData();
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      alert('Failed to delete time entry');
+    }
+  };
+
   if (loading) {
     return (
       <ProtectedRoute>
@@ -1209,15 +1367,45 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       <option value="developer_team">Developer Team</option>
                     </select>
 
-                    {/* Export PDF Button */}
-                    <button
-                      onClick={exportToPDF}
-                      className="inline-flex items-center px-4 py-2 bg-studio-x text-white rounded-md hover:bg-studio-x-600 transition-colors text-sm font-medium"
-                      disabled={filteredTimeEntries.length === 0}
-                    >
-                      <FileDown className="h-4 w-4 mr-2" />
-                      Export PDF
-                    </button>
+                    {/* Export Dropdown */}
+                    <div className="relative export-dropdown">
+                      <button
+                        onClick={() => setShowExportDropdown(!showExportDropdown)}
+                        className="inline-flex items-center px-4 py-2 bg-studio-x text-white rounded-md hover:bg-studio-x-600 transition-colors text-sm font-medium"
+                        disabled={filteredTimeEntries.length === 0}
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        Export
+                        <svg className="ml-2 -mr-0.5 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                      
+                      {showExportDropdown && (
+                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-card ring-1 ring-black ring-opacity-5 z-10">
+                          <div className="py-1">
+                            <button
+                              onClick={() => {
+                                exportToPDF();
+                                setShowExportDropdown(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            >
+                              Export as PDF
+                            </button>
+                            <button
+                              onClick={() => {
+                                exportToCSV();
+                                setShowExportDropdown(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            >
+                              Export as CSV
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1243,6 +1431,9 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Actions
                           </th>
                         </tr>
                       </thead>
@@ -1277,6 +1468,24 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                   {entry.status}
                                 </span>
                               </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => handleEditTimeEntry(entry)}
+                                    className="text-studio-x hover:text-studio-x-700"
+                                    title="Edit time entry"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteTimeEntry(entry.id)}
+                                    className="text-red-600 hover:text-red-900"
+                                    title="Delete time entry"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </td>
                             </tr>
                           );
                         })}
@@ -1289,6 +1498,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-foreground">
                             {formatHours(filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0))}
                           </td>
+                          <td></td>
                           <td></td>
                         </tr>
                       </tfoot>
@@ -2032,6 +2242,133 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               {submitting ? 'Saving...' : 'Save Changes'}
                             </button>
                           </div>
+                        </div>
+                      </form>
+                    </Dialog.Panel>
+                  </Transition.Child>
+                </div>
+              </div>
+            </Dialog>
+          </Transition>
+
+          {/* Edit Time Entry Modal */}
+          <Transition appear show={showEditTimeModal} as={Fragment}>
+            <Dialog as="div" className="relative z-10" onClose={() => setShowEditTimeModal(false)}>
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-25" />
+              </Transition.Child>
+
+              <div className="fixed inset-0 overflow-y-auto">
+                <div className="flex min-h-full items-center justify-center p-4 text-center">
+                  <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0 scale-95"
+                    enterTo="opacity-100 scale-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100 scale-100"
+                    leaveTo="opacity-0 scale-95"
+                  >
+                    <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-card p-8 text-left align-middle shadow-xl transition-all">
+                      <Dialog.Title
+                        as="h3"
+                        className="text-2xl font-semibold leading-6 text-gray-900 dark:text-foreground mb-6"
+                      >
+                        Edit Time Entry
+                      </Dialog.Title>
+                      
+                      <form onSubmit={handleUpdateTimeEntry} className="space-y-6">
+                        <div>
+                          <label htmlFor="edit-date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Date
+                          </label>
+                          <input
+                            type="date"
+                            id="edit-date"
+                            name="date"
+                            value={editTimeFormData.date}
+                            onChange={(e) => setEditTimeFormData({ ...editTimeFormData, date: e.target.value })}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Category
+                          </label>
+                          <select
+                            id="edit-category"
+                            name="category"
+                            value={editTimeFormData.category}
+                            onChange={(e) => setEditTimeFormData({ ...editTimeFormData, category: e.target.value as WorkCategory })}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm dark:bg-gray-800 dark:text-white"
+                            required
+                          >
+                            <option value="">Select category</option>
+                            {workCategories.map((category) => (
+                              <option key={category.value} value={category.value}>
+                                {category.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label htmlFor="edit-hours" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Hours
+                          </label>
+                          <input
+                            type="number"
+                            id="edit-hours"
+                            name="hours"
+                            step="0.5"
+                            min="0.5"
+                            value={editTimeFormData.hours}
+                            onChange={(e) => setEditTimeFormData({ ...editTimeFormData, hours: e.target.value })}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Description
+                          </label>
+                          <textarea
+                            id="edit-description"
+                            name="description"
+                            rows={3}
+                            value={editTimeFormData.description}
+                            onChange={(e) => setEditTimeFormData({ ...editTimeFormData, description: e.target.value })}
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm dark:bg-gray-800 dark:text-white"
+                            required
+                          />
+                        </div>
+
+                        <div className="flex justify-end space-x-3 pt-4">
+                          <button
+                            type="button"
+                            onClick={() => setShowEditTimeModal(false)}
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={submitting}
+                            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {submitting ? 'Updating...' : 'Update Entry'}
+                          </button>
                         </div>
                       </form>
                     </Dialog.Panel>

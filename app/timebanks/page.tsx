@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
 import { Timebank, Client } from '@/types';
-import { Plus, Edit2, Trash2, X, Clock } from 'lucide-react';
+import { Plus, Trash2, X, Clock } from 'lucide-react';
 import { calculateTimebankStatus, getStatusColor, formatHours } from '@/utils/timebank';
 
 export default function TimebanksPage() {
@@ -14,7 +14,6 @@ export default function TimebanksPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
   const [formData, setFormData] = useState({
     clientId: '',
     name: '',
@@ -59,26 +58,19 @@ export default function TimebanksPage() {
         clientId: formData.clientId,
         name: formData.name,
         totalHours: parseFloat(formData.totalHours),
-        usedHours: editingTimebank?.usedHours || 0,
-        remainingHours: editingTimebank 
-          ? parseFloat(formData.totalHours) - (editingTimebank.usedHours || 0)
-          : parseFloat(formData.totalHours),
+        usedHours: 0,
+        remainingHours: parseFloat(formData.totalHours),
         status: 'active' as const,
         purchaseDate: new Date(formData.purchaseDate),
         expiryDate: formData.expiryDate ? new Date(formData.expiryDate) : null,
         updatedAt: new Date(),
       };
 
-      if (editingTimebank) {
-        // Update existing timebank
-        await updateDoc(doc(db, 'timebanks', editingTimebank.id), timebankData);
-      } else {
-        // Add new timebank
-        await addDoc(collection(db, 'timebanks'), {
-          ...timebankData,
-          createdAt: new Date(),
-        });
-      }
+      // Add new timebank
+      await addDoc(collection(db, 'timebanks'), {
+        ...timebankData,
+        createdAt: new Date(),
+      });
       
       await fetchData();
       resetForm();
@@ -87,25 +79,13 @@ export default function TimebanksPage() {
     }
   };
 
-  const handleEdit = (timebank: Timebank) => {
-    setEditingTimebank(timebank);
-    setFormData({
-      clientId: timebank.clientId,
-      name: timebank.name,
-      totalHours: timebank.totalHours.toString(),
-      purchaseDate: timebank.purchaseDate instanceof Date 
-        ? timebank.purchaseDate.toISOString().split('T')[0]
-        : new Date(timebank.purchaseDate).toISOString().split('T')[0],
-      expiryDate: timebank.expiryDate 
-        ? (timebank.expiryDate instanceof Date 
-          ? timebank.expiryDate.toISOString().split('T')[0]
-          : new Date(timebank.expiryDate).toISOString().split('T')[0])
-        : '',
-    });
-    setShowModal(true);
-  };
 
-  const handleDelete = async (timebankId: string) => {
+  const handleDelete = async (timebankId: string, usedHours: number) => {
+    if (usedHours > 0) {
+      alert('Cannot delete a timebank that has used hours. This timebank has ' + formatHours(usedHours) + ' hours already used.');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this timebank?')) {
       try {
         await deleteDoc(doc(db, 'timebanks', timebankId));
@@ -124,7 +104,6 @@ export default function TimebanksPage() {
       purchaseDate: '',
       expiryDate: '',
     });
-    setEditingTimebank(null);
     setShowModal(false);
   };
 
@@ -194,20 +173,13 @@ export default function TimebanksPage() {
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getStatusColor(status)}`}>
                           {timebank.status}
                         </span>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEdit(timebank)}
-                            className="text-studio-x hover:text-studio-x-700"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(timebank.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleDelete(timebank.id, timebank.usedHours)}
+                          className={`${timebank.usedHours > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                          title={timebank.usedHours > 0 ? 'Cannot delete - hours have been used' : 'Delete timebank'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -227,7 +199,7 @@ export default function TimebanksPage() {
                     <div className="bg-white dark:bg-card px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground">
-                          {editingTimebank ? 'Edit Timebank' : 'Add New Timebank'}
+                          Add New Timebank
                         </h3>
                         <button
                           type="button"
@@ -328,7 +300,7 @@ export default function TimebanksPage() {
                         type="submit"
                         className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-studio-x text-base font-medium text-white hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x sm:ml-3 sm:w-auto sm:text-sm"
                       >
-                        {editingTimebank ? 'Update' : 'Add'}
+                        Add
                       </button>
                       <button
                         type="button"
