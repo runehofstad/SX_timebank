@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase/config';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
 import { Timebank, Client } from '@/types';
-import { Plus, Trash2, X, Clock } from 'lucide-react';
+import { Plus, Trash2, X, Clock, Edit2 } from 'lucide-react';
 import { calculateTimebankStatus, getStatusColor, formatHours } from '@/utils/timebank';
 
 export default function TimebanksPage() {
@@ -180,15 +180,24 @@ export default function TimebanksPage() {
                       
                       <div className="mt-4 flex justify-between">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white ${getStatusColor(status)}`}>
-                          {timebank.status}
+                          active
                         </span>
-                        <button
-                          onClick={() => handleDelete(timebank.id, timebank.usedHours)}
-                          className={`${timebank.usedHours > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
-                          title={timebank.usedHours > 0 ? 'Cannot delete - hours have been used' : 'Delete timebank'}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {/* Edit functionality disabled */}}
+                            className="text-gray-600 hover:text-studio-x transition-colors"
+                            title="Edit timebank"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(timebank.id, timebank.usedHours)}
+                            className={`${timebank.usedHours > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                            title={timebank.usedHours > 0 ? 'Cannot delete - hours have been used' : 'Delete timebank'}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
