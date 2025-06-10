@@ -939,13 +939,27 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       await updateDoc(timeEntryRef, updatedData);
       
       // Update the timebank hours if there's a difference
-      if (hoursDifference !== 0) {
-        const timebankRef = doc(db, 'timebanks', editingTimeEntry.timebankId);
-        await updateDoc(timebankRef, {
-          usedHours: increment(hoursDifference),
-          remainingHours: increment(-hoursDifference),
-          updatedAt: new Date()
-        });
+      if (hoursDifference !== 0 && editingTimeEntry.timebankId) {
+        try {
+          const timebankRef = doc(db, 'timebanks', editingTimeEntry.timebankId);
+          console.log('Updating timebank:', editingTimeEntry.timebankId);
+          
+          // Check if timebank exists in our local data
+          const timebankExists = timebanks.some(tb => tb.id === editingTimeEntry.timebankId);
+          if (!timebankExists) {
+            console.warn('Timebank not found locally, skipping update:', editingTimeEntry.timebankId);
+          } else {
+            await updateDoc(timebankRef, {
+              usedHours: increment(hoursDifference),
+              remainingHours: increment(-hoursDifference),
+              updatedAt: new Date()
+            });
+          }
+        } catch (timebankError) {
+          console.error('Error updating timebank hours:', timebankError);
+          // Don't fail the entire operation if timebank update fails
+          // The time entry has already been updated successfully
+        }
       }
       
       setShowEditTimeModal(false);
@@ -960,7 +974,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       await fetchProjectData();
     } catch (error) {
       console.error('Error updating time entry:', error);
-      alert(`Failed to update time entry: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert('Failed to update time entry. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -980,13 +994,25 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       // Delete the time entry
       await deleteDoc(doc(db, 'timeEntries', entryId));
 
-      // Update the timebank to restore the hours
-      const timebankRef = doc(db, 'timebanks', entryToDelete.timebankId);
-      await updateDoc(timebankRef, {
-        usedHours: increment(-entryToDelete.hours),
-        remainingHours: increment(entryToDelete.hours),
-        updatedAt: new Date()
-      });
+      // Update the timebank to restore the hours if it exists
+      if (entryToDelete.timebankId) {
+        try {
+          const timebankExists = timebanks.some(tb => tb.id === entryToDelete.timebankId);
+          if (timebankExists) {
+            const timebankRef = doc(db, 'timebanks', entryToDelete.timebankId);
+            await updateDoc(timebankRef, {
+              usedHours: increment(-entryToDelete.hours),
+              remainingHours: increment(entryToDelete.hours),
+              updatedAt: new Date()
+            });
+          } else {
+            console.warn('Timebank not found for deleted entry, skipping hours restoration:', entryToDelete.timebankId);
+          }
+        } catch (timebankError) {
+          console.error('Error updating timebank after deletion:', timebankError);
+          // Don't fail - the time entry has been deleted successfully
+        }
+      }
 
       await fetchProjectData();
     } catch (error) {
