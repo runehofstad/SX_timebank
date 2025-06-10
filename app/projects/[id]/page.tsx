@@ -921,7 +921,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       };
 
       // Update the time entry
-      await updateDoc(doc(db, 'time_entries', editingTimeEntry.id), updatedData);
+      await updateDoc(doc(db, 'timeEntries', editingTimeEntry.id), updatedData);
       
       // Update the timebank hours if there's a difference
       if (hoursDifference !== 0) {
@@ -945,7 +945,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       await fetchProjectData();
     } catch (error) {
       console.error('Error updating time entry:', error);
-      alert('Failed to update time entry');
+      alert(`Failed to update time entry: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setSubmitting(false);
     }
@@ -963,7 +963,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       if (!entryToDelete) return;
 
       // Delete the time entry
-      await deleteDoc(doc(db, 'time_entries', entryId));
+      await deleteDoc(doc(db, 'timeEntries', entryId));
 
       // Update the timebank to restore the hours
       const timebankRef = doc(db, 'timebanks', entryToDelete.timebankId);
