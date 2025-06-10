@@ -97,10 +97,13 @@ export default function DashboardPage() {
         }, {} as Record<string, Client>);
         
         const timebanksSnapshot = await getDocs(collection(db, 'timebanks'));
-        timebanks = timebanksSnapshot.docs.map(doc => ({
+        const allTimebanks = timebanksSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         } as Timebank));
+        
+        // Filter timebanks to only include those with existing clients
+        timebanks = allTimebanks.filter(tb => clients[tb.clientId]);
         
         const projectsQuery = query(collection(db, 'projects'), where('status', '==', 'active'));
         const projectsSnapshot = await getDocs(projectsQuery);
@@ -139,6 +142,9 @@ export default function DashboardPage() {
           .filter(tb => userClientIds.includes(tb.clientId));
       }
       
+      // Filter projects to only include those with existing clients
+      const validProjects = projects.filter(project => clients[project.clientId]);
+      
       // Calculate stats
       const totalClients = Object.keys(clients).length;
       const activeTimebanksList = timebanks.filter(tb => tb.status === 'active');
@@ -149,7 +155,7 @@ export default function DashboardPage() {
         return sum + Math.max(0, remainingHours);
       }, 0);
       const totalHoursUsed = timebanks.reduce((sum, tb) => sum + (tb.usedHours || 0), 0);
-      const projectsInProgress = projects.length;
+      const projectsInProgress = validProjects.length;
       
       // Temporary debug for dashboard stats
       if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
@@ -174,7 +180,7 @@ export default function DashboardPage() {
       
       // Combine projects with their client's timebanks and fetch last activity
       const projectsWithTimebankData = await Promise.all(
-        projects.map(async (project) => {
+        validProjects.map(async (project) => {
           const clientTimebanks = timebanksByClient[project.clientId] || [];
           
           // Find the active timebank (should be only one per client with new logic)
