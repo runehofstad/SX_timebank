@@ -478,18 +478,14 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         // Check if timebank was negative before adding hours
         const wasNegative = existingActiveTimebank.remainingHours < 0;
         
-        // Accumulate hours to existing timebank
+        // Add hours to existing timebank without changing the total
         const currentRemainingHours = existingActiveTimebank.remainingHours || 0;
         const newRemainingHours = currentRemainingHours + newHours;
-        // New total is the new remaining hours (this becomes the new 100% baseline)
-        const newTotalHours = newRemainingHours;
         
-        // Update the existing timebank
+        // Update the existing timebank - only update remaining hours
         const timebankRef = doc(db, 'timebanks', existingActiveTimebank.id);
         await updateDoc(timebankRef, {
-          totalHours: newTotalHours,
           remainingHours: newRemainingHours,
-          usedHours: 0, // Reset to 0 as we have a new baseline
           lastTopUpAmount: newHours,
           lastTopUpDate: new Date(timebankFormData.purchaseDate),
           expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
@@ -1784,7 +1780,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             <Clock className="inline h-4 w-4 mr-1" />
-                            Total Hours
+                            {timebanks.some(tb => tb.status === 'active') ? 'Hours to Add' : 'Total Hours'}
                           </label>
                           <input
                             type="number"
@@ -1796,7 +1792,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             placeholder="e.g., 100"
                             required
                           />
-                          <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">The total number of hours available in this timebank</p>
+                          <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                            {timebanks.some(tb => tb.status === 'active') 
+                              ? 'These hours will be added to the existing timebank balance'
+                              : 'The total number of hours available in this timebank'}
+                          </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
