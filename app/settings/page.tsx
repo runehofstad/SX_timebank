@@ -7,7 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
-import { Save, Mail, Bell, Globe, Moon, Sun } from 'lucide-react';
+import { Save, Mail, Bell, Globe, Moon, Sun, Smartphone } from 'lucide-react';
+import { useFCMToken } from '@/hooks/useFCMToken';
 
 interface SystemSettings {
   companyName: string;
@@ -35,6 +36,7 @@ interface SystemSettings {
 export default function SettingsPage() {
   const { userProfile } = useAuth();
   const { theme, themeMode, setThemeMode } = useTheme();
+  const { permission, token, requestPermission, removeToken, loading: pushLoading, error: pushError, isSupported } = useFCMToken();
   const [settings, setSettings] = useState<SystemSettings>({
     companyName: '',
     companyEmail: '',
@@ -235,6 +237,68 @@ export default function SettingsPage() {
                     onChange={(e) => setSettings({ ...settings, companyAddress: e.target.value })}
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Push Notifications */}
+            <div className="px-4 py-5 sm:p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-foreground flex items-center">
+                <Smartphone className="h-5 w-5 mr-2" />
+                Push Notifications
+              </h3>
+              <div className="mt-6 space-y-4">
+                {isSupported ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-foreground">Push Notifications</p>
+                        <p className="text-sm text-gray-500 dark:text-muted-foreground">
+                          Receive instant alerts when timebank hours are running low
+                        </p>
+                      </div>
+                      {permission === 'granted' && token ? (
+                        <button
+                          onClick={removeToken}
+                          disabled={pushLoading}
+                          className="inline-flex items-center px-3 py-1.5 border border-red-300 dark:border-red-700 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-white dark:bg-card hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                        >
+                          {pushLoading ? 'Disabling...' : 'Disable'}
+                        </button>
+                      ) : permission === 'denied' ? (
+                        <span className="text-sm text-gray-500 dark:text-muted-foreground">
+                          Blocked in browser settings
+                        </span>
+                      ) : (
+                        <button
+                          onClick={requestPermission}
+                          disabled={pushLoading}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-studio-x hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50"
+                        >
+                          {pushLoading ? 'Enabling...' : 'Enable'}
+                        </button>
+                      )}
+                    </div>
+                    {pushError && (
+                      <p className="text-sm text-red-600 dark:text-red-400">{pushError}</p>
+                    )}
+                    {permission === 'denied' && (
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                          Push notifications are blocked. To enable them:
+                        </p>
+                        <ol className="mt-2 text-sm text-yellow-700 dark:text-yellow-300 list-decimal list-inside">
+                          <li>Click the lock icon in your browser&apos;s address bar</li>
+                          <li>Find &quot;Notifications&quot; and change it to &quot;Allow&quot;</li>
+                          <li>Refresh this page and try again</li>
+                        </ol>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-muted-foreground">
+                    Push notifications are not supported in your browser
+                  </p>
+                )}
               </div>
             </div>
 

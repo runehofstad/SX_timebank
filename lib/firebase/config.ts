@@ -1,6 +1,7 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getMessaging, Messaging, isSupported } from 'firebase/messaging';
 
 // Use demo project if no real config is provided
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
+let messaging: Messaging | null = null;
 
 try {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
@@ -46,5 +48,23 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development' && p
     console.log('Emulators already connected or not available');
   }
 }
+
+// Initialize Firebase Cloud Messaging
+export const getMessagingInstance = async (): Promise<Messaging | null> => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
+  try {
+    const isSupportedBrowser = await isSupported();
+    if (isSupportedBrowser && !messaging) {
+      messaging = getMessaging(app);
+    }
+    return messaging;
+  } catch (error) {
+    console.error('Error initializing messaging:', error);
+    return null;
+  }
+};
 
 export { app, auth, db };

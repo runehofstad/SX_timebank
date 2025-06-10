@@ -14,6 +14,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import NotificationPermission from '@/components/ui/NotificationPermission';
 
 interface NavItem {
   name: string;
@@ -198,6 +199,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </main>
       </div>
+      <NotificationPermission />
     </div>
   );
 }

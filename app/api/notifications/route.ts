@@ -1,7 +1,108 @@
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase/admin';
+import { adminDb, adminMessaging } from '@/lib/firebase/admin';
 import { sendEmail, generateTimebankLowHoursEmail, generateTimebankDepletedEmail, generateTimebankExpiringEmail } from '@/lib/email/service';
-import { Timebank, Client, EmailNotification } from '@/types';
+import { Timebank, Client, EmailNotification, User, Project } from '@/types';
+import { formatTimebankNotification } from '@/lib/notifications/push-service';
+
+// Helper function to send push notifications
+async function sendPushNotifications(
+  timebank: Timebank,
+  client: Client,
+  type: 'low_hours' | 'critical_hours' | 'depleted' | 'expiring_soon',
+  users: User[],
+  projects: Project[]
+) {
+  try {
+    // Find projects for this client
+    const clientProjects = projects.filter(p => p.clientId === client.id);
+    
+    // Get users who should receive notifications
+    const notificationRecipients: User[] = [];
+    
+    // Add admins - they get all notifications
+    const admins = users.filter(u => u.role === 'admin' && u.pushNotificationsEnabled && u.fcmTokens?.length);
+    notificationRecipients.push(...admins);
+    
+    // Add users assigned to projects for this client
+    const projectUserIds = new Set<string>();
+    clientProjects.forEach(project => {
+      project.teamMembers?.forEach(userId => projectUserIds.add(userId));
+    });
+    
+    const projectUsers = users.filter(u => 
+      projectUserIds.has(u.id) && 
+      u.pushNotificationsEnabled && 
+      u.fcmTokens?.length
+    );
+    notificationRecipients.push(...projectUsers);
+    
+    // Remove duplicates
+    const uniqueRecipients = Array.from(new Map(notificationRecipients.map(u => [u.id, u])).values());
+    
+    // Collect all FCM tokens
+    const allTokens: string[] = [];
+    uniqueRecipients.forEach(user => {
+      if (user.fcmTokens) {
+        allTokens.push(...user.fcmTokens);
+      }
+    });
+    
+    if (allTokens.length === 0) {
+      console.log('No FCM tokens found for push notifications');
+      return;
+    }
+    
+    // Format notification based on user role
+    const messages = uniqueRecipients.flatMap(user => {
+      const isAdmin = user.role === 'admin';
+      const projectName = !isAdmin && clientProjects.length > 0 ? clientProjects[0].name : undefined;
+      
+      const { title, body } = formatTimebankNotification(
+        timebank.name,
+        client.name,
+        timebank.remainingHours,
+        timebank.totalHours,
+        isAdmin,
+        projectName
+      );
+      
+      return user.fcmTokens?.map(token => ({
+        token,
+        notification: { title, body },
+        data: {
+          timebankId: timebank.id,
+          clientId: client.id,
+          type,
+          url: isAdmin ? `/timebanks` : `/projects/${clientProjects[0]?.id || ''}`,
+          remainingHours: timebank.remainingHours.toString(),
+          totalHours: timebank.totalHours.toString()
+        },
+        webpush: {
+          fcmOptions: {
+            link: isAdmin ? `/timebanks` : `/projects/${clientProjects[0]?.id || ''}`
+          }
+        }
+      })) || [];
+    });
+    
+    // Send notifications in batches (FCM limit is 500 per request)
+    const batchSize = 500;
+    for (let i = 0; i < messages.length; i += batchSize) {
+      const batch = messages.slice(i, i + batchSize);
+      const response = await adminMessaging.sendEach(batch);
+      console.log(`Sent ${response.successCount} push notifications, ${response.failureCount} failed`);
+      
+      // Log failed tokens for cleanup
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success && resp.error) {
+          console.error(`Failed to send to token ${batch[idx].token}:`, resp.error);
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error sending push notifications:', error);
+  }
+}
 
 export async function POST() {
   try {
@@ -34,6 +135,20 @@ export async function POST() {
       id: doc.id,
       ...doc.data()
     } as Client));
+    
+    // Get all users for push notifications
+    const usersSnapshot = await adminDb.collection('users').get();
+    const users = usersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as User));
+    
+    // Get all projects for user access control
+    const projectsSnapshot = await adminDb.collection('projects').get();
+    const projects = projectsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Project));
 
     const notifications: EmailNotification[] = [];
 
@@ -53,6 +168,9 @@ export async function POST() {
         const emailOptions = generateTimebankDepletedEmail(timebank, client);
         emailOptions.to = recipients; // Send to all recipients
         await sendEmail(emailOptions);
+        
+        // Send push notifications
+        await sendPushNotifications(timebank, client, 'depleted', users, projects);
         
         notifications.push({
           id: '', // Will be set by Firestore
@@ -84,6 +202,9 @@ export async function POST() {
           emailOptions.to = recipients; // Send to all recipients
           await sendEmail(emailOptions);
           
+          // Send push notifications
+          await sendPushNotifications(timebank, client, 'low_hours', users, projects);
+          
           notifications.push({
             id: '',
             clientId: client.id,
@@ -109,6 +230,9 @@ export async function POST() {
           emailOptions.to = recipients; // Send to all recipients
           emailOptions.subject = `URGENT: Timebank Critical - ${timebank.name} has only ${percentageRemaining.toFixed(1)}% remaining`;
           await sendEmail(emailOptions);
+          
+          // Send push notifications
+          await sendPushNotifications(timebank, client, 'critical_hours', users, projects);
           
           notifications.push({
             id: '',
@@ -140,6 +264,9 @@ export async function POST() {
             const emailOptions = generateTimebankExpiringEmail(timebank, client, daysUntilExpiry);
             emailOptions.to = recipients; // Send to all recipients
             await sendEmail(emailOptions);
+            
+            // Send push notifications
+            await sendPushNotifications(timebank, client, 'expiring_soon', users, projects);
             
             notifications.push({
               id: '',

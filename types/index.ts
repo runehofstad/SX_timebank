@@ -6,6 +6,8 @@ export interface User {
   name: string;
   role: 'admin' | 'project_manager' | 'developer';
   department?: Department;
+  fcmTokens?: string[]; // Array to support multiple devices
+  pushNotificationsEnabled?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -106,4 +108,27 @@ export interface Invitation {
   status: 'pending' | 'accepted' | 'expired';
   token: string;
   acceptedAt?: Date;
+}
+
+export interface PushNotification {
+  id: string;
+  userId: string;
+  clientId: string;
+  timebankId: string;
+  projectId?: string;
+  type: 'low_hours' | 'critical_hours' | 'depleted' | 'expiring_soon';
+  title: string;
+  body: string;
+  sentAt: Date;
+  clicked?: boolean;
+  clickedAt?: Date;
+}
+
+export interface PushSubscription {
+  id: string;
+  userId: string;
+  fcmToken: string;
+  device?: string;
+  createdAt: Date;
+  lastUsed: Date;
 }
