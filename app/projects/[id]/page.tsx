@@ -1329,17 +1329,21 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               >
                                 <div className="font-medium">{category.label}</div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {category.value === 'project_management' && 'Planning, coordination, meetings'}
-                                  {category.value === 'ios_development' && 'iPhone & iPad app development'}
-                                  {category.value === 'android_development' && 'Android app development'}
-                                  {category.value === 'flutter_development' && 'Cross-platform Flutter apps'}
-                                  {category.value === 'react_native_development' && 'Cross-platform React Native apps'}
+                                  {category.value === 'backend' && 'Server, API, database work'}
+                                  {category.value === 'frontend' && 'Web interface development'}
+                                  {category.value === 'ai_development' && 'Building AI models and systems'}
+                                  {category.value === 'ai' && 'AI integration and implementation'}
+                                  {category.value === 'ios_native' && 'Native iOS app development'}
+                                  {category.value === 'android_native' && 'Native Android app development'}
+                                  {category.value === 'react_native' && 'Cross-platform React Native apps'}
+                                  {category.value === 'flutter' && 'Cross-platform Flutter apps'}
                                   {category.value === 'ui_ux_design' && 'Interface design, user experience'}
+                                  {category.value === 'devops' && 'Infrastructure, CI/CD, deployment'}
+                                  {category.value === 'project_management' && 'Planning, coordination, reporting'}
+                                  {category.value === 'qa' && 'Testing, quality assurance'}
+                                  {category.value === 'workshop' && 'Training sessions, workshops'}
                                   {category.value === 'meeting' && 'Client meetings, team sync'}
-                                  {category.value === 'backend_development' && 'Server, API, database work'}
-                                  {category.value === 'frontend_development' && 'Web interface development'}
-                                  {category.value === 'testing' && 'QA, testing, bug verification'}
-                                  {category.value === 'video_production' && 'Editing, Recording and streaming'}
+                                  {category.value === 'video_production' && 'Editing, recording, streaming'}
                                   {category.value === 'other' && 'Other development tasks'}
                                 </div>
                               </button>

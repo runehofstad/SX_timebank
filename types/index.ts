@@ -65,16 +65,20 @@ export interface TimeEntry {
 }
 
 export type WorkCategory = 
-  | 'project_management'
-  | 'ios_development'
-  | 'android_development'
-  | 'flutter_development'
-  | 'react_native_development'
+  | 'backend'
+  | 'frontend'
+  | 'ai_development'
+  | 'ai'
+  | 'ios_native'
+  | 'android_native'
+  | 'react_native'
+  | 'flutter'
   | 'ui_ux_design'
+  | 'devops'
+  | 'project_management'
+  | 'qa'
+  | 'workshop'
   | 'meeting'
-  | 'backend_development'
-  | 'frontend_development'
-  | 'testing'
   | 'video_production'
   | 'other';
 

@@ -33,16 +33,20 @@ export function calculateRemainingPercentage(timebank: Timebank): number {
 }
 
 export const workCategories: { value: WorkCategory; label: string }[] = [
-  { value: 'project_management', label: 'Project Management' },
-  { value: 'ios_development', label: 'iOS Development' },
-  { value: 'android_development', label: 'Android Development' },
-  { value: 'flutter_development', label: 'Flutter Development' },
-  { value: 'react_native_development', label: 'React Native Development' },
+  { value: 'backend', label: 'Backend' },
+  { value: 'frontend', label: 'Frontend' },
+  { value: 'ai_development', label: 'AI Development' },
+  { value: 'ai', label: 'AI' },
+  { value: 'ios_native', label: 'iOS Native' },
+  { value: 'android_native', label: 'Android Native' },
+  { value: 'react_native', label: 'React Native' },
+  { value: 'flutter', label: 'Flutter' },
   { value: 'ui_ux_design', label: 'UI/UX Design' },
+  { value: 'devops', label: 'DevOps' },
+  { value: 'project_management', label: 'Project Management' },
+  { value: 'qa', label: 'QA' },
+  { value: 'workshop', label: 'Workshop' },
   { value: 'meeting', label: 'Meeting' },
-  { value: 'backend_development', label: 'Backend Development' },
-  { value: 'frontend_development', label: 'Frontend Development' },
-  { value: 'testing', label: 'Testing' },
   { value: 'video_production', label: 'Video Production' },
   { value: 'other', label: 'Other' }
 ];
