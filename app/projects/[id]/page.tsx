@@ -892,6 +892,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
   // Handle edit time entry
   const handleEditTimeEntry = (entry: TimeEntry) => {
+    console.log('Editing time entry:', entry);
     setEditingTimeEntry(entry);
     setEditTimeFormData({
       description: entry.description,
@@ -920,8 +921,22 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         updatedAt: new Date()
       };
 
+      console.log('Updating time entry:', {
+        id: editingTimeEntry.id,
+        collection: 'timeEntries',
+        data: updatedData,
+        fullEntry: editingTimeEntry
+      });
+
+      // Verify the ID is valid
+      if (!editingTimeEntry.id || editingTimeEntry.id.includes('/')) {
+        throw new Error(`Invalid time entry ID: ${editingTimeEntry.id}`);
+      }
+
       // Update the time entry
-      await updateDoc(doc(db, 'timeEntries', editingTimeEntry.id), updatedData);
+      const timeEntryRef = doc(db, 'timeEntries', editingTimeEntry.id);
+      console.log('Document reference path:', timeEntryRef.path);
+      await updateDoc(timeEntryRef, updatedData);
       
       // Update the timebank hours if there's a difference
       if (hoursDifference !== 0) {
