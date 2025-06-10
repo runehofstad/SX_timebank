@@ -1231,7 +1231,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       {/* Timebank Details */}
                       <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Timebank Details</h4>
                       <div className="space-y-4">
-                        {timebanks.filter(tb => tb.status === 'active').map((timebank) => {
+                        {timebanks.map((timebank) => {
                           const status = calculateTimebankStatus(timebank);
                           const percentageRemaining = ((timebank.totalHours - timebank.usedHours) / timebank.totalHours) * 100;
                           
