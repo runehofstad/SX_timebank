@@ -28,6 +28,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
         style={{
           transform: `translateY(${isRefreshing ? 0 : pullDistance - 50}px)`,
           height: '50px',
+          zIndex: 10,
         }}
       >
         <div className="flex items-center justify-center">
@@ -53,6 +54,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
 
       {/* Main content */}
       <div
+        className="relative"
         style={{
           transform: `translateY(${isPulling || isRefreshing ? Math.min(pullDistance, threshold) : 0}px)`,
           transition: isPulling ? 'none' : 'transform 0.3s ease-out',
