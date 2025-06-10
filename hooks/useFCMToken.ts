@@ -4,7 +4,7 @@ import { requestNotificationPermission, saveFCMToken, removeFCMToken, setupMessa
 import { useRouter } from 'next/navigation';
 
 export function useFCMToken() {
-  const { user, userProfile } = useAuth();
+  const { userProfile } = useAuth();
   const router = useRouter();
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [token, setToken] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function useFCMToken() {
 
   useEffect(() => {
     // Setup message listener for foreground notifications
-    if (token && user) {
+    if (token && userProfile) {
       setupMessageListener((payload) => {
         // Show in-app notification or custom UI
         console.log('Received foreground message:', payload);
@@ -43,10 +43,10 @@ export function useFCMToken() {
         }
       });
     }
-  }, [token, user, router]);
+  }, [token, userProfile, router]);
 
   const requestPermission = async () => {
-    if (!user || !userProfile) {
+    if (!userProfile) {
       setError('You must be logged in to enable notifications');
       return;
     }
@@ -58,7 +58,7 @@ export function useFCMToken() {
       const fcmToken = await requestNotificationPermission();
       
       if (fcmToken) {
-        await saveFCMToken(user.uid, fcmToken);
+        await saveFCMToken(userProfile.id, fcmToken);
         setToken(fcmToken);
         setPermission('granted');
       } else {
@@ -76,11 +76,11 @@ export function useFCMToken() {
   };
 
   const removeToken = async () => {
-    if (!user || !token) return;
+    if (!userProfile || !token) return;
 
     setLoading(true);
     try {
-      await removeFCMToken(user.uid, token);
+      await removeFCMToken(userProfile.id, token);
       setToken(null);
     } catch (err) {
       console.error('Error removing token:', err);
