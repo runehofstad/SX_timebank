@@ -22,8 +22,7 @@ import {
   AlertCircle,
   Plus,
   X,
-  FileDown,
-  Sparkles
+  FileDown
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
