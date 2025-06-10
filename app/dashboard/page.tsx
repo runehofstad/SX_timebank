@@ -451,11 +451,14 @@ export default function DashboardPage() {
                       : 0;
                     const remainingPercentage = 100 - usedPercentage;
                     
-                    // Determine colors based on remaining percentage
+                    // Determine colors based on remaining hours and percentage
                     let statusColor = 'text-green-600';
                     let progressBarColor = 'bg-green-500';
                     
-                    if (remainingPercentage <= 25) {
+                    if (project.remainingHours < 0) {
+                      statusColor = 'text-red-600';
+                      progressBarColor = 'bg-red-500';
+                    } else if (remainingPercentage <= 25) {
                       statusColor = 'text-red-600';
                       progressBarColor = 'bg-red-500';
                     } else if (remainingPercentage <= 50) {
@@ -517,7 +520,12 @@ export default function DashboardPage() {
                         
                         {/* Warning messages */}
                         <div className="mt-2 space-y-1">
-                          {remainingPercentage <= 50 && (
+                          {project.remainingHours < 0 ? (
+                            <div className="flex items-center text-sm text-red-600 font-medium">
+                              <AlertTriangle className="h-4 w-4 mr-1" />
+                              Negative balance: {formatHours(Math.abs(project.remainingHours))} hours over limit
+                            </div>
+                          ) : remainingPercentage <= 50 && (
                             <div className={`flex items-center text-sm ${
                               remainingPercentage <= 25 ? 'text-red-600' : 'text-yellow-600'
                             }`}>

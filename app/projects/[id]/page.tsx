@@ -1001,7 +1001,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           </div>
                           <div>
                             <p className="text-sm text-gray-600 dark:text-muted-foreground">Remaining Hours</p>
-                            <p className="text-xl font-semibold text-green-600">
+                            <p className={`text-xl font-semibold ${
+                              timebanks.reduce((sum, tb) => sum + tb.remainingHours, 0) < 0 
+                                ? 'text-red-600' 
+                                : 'text-green-600'
+                            }`}>
                               {formatHours(timebanks.reduce((sum, tb) => sum + tb.remainingHours, 0))}
                             </p>
                           </div>
@@ -1054,7 +1058,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                   {timebank.description && (
                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{timebank.description}</p>
                                   )}
-                                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                                  <p className={`text-sm mt-2 ${
+                                    timebank.remainingHours < 0 
+                                      ? 'text-red-600 dark:text-red-500 font-medium' 
+                                      : 'text-gray-500 dark:text-gray-400'
+                                  }`}>
                                     {formatHours(timebank.remainingHours)} of {formatHours(timebank.totalHours)} hours remaining
                                   </p>
                                 </div>
