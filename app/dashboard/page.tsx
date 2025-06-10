@@ -45,7 +45,7 @@ export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<ProjectWithTimebank | null>(null);
   const [timeFormData, setTimeFormData] = useState({
     description: '',
-    category: 'other' as WorkCategory,
+    category: '' as WorkCategory,
     hours: '',
     date: format(new Date(), 'yyyy-MM-dd')
   });
@@ -552,43 +552,23 @@ export default function DashboardPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          <label htmlFor="quick-time-category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             What type of work did you do?
                           </label>
-                          <div className="grid grid-cols-2 gap-3">
+                          <select
+                            id="quick-time-category"
+                            value={timeFormData.category}
+                            onChange={(e) => setTimeFormData({ ...timeFormData, category: e.target.value as WorkCategory })}
+                            className="block w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                            required
+                          >
+                            <option value="">Select a category...</option>
                             {workCategories.map((category) => (
-                              <button
-                                key={category.value}
-                                type="button"
-                                onClick={() => setTimeFormData({ ...timeFormData, category: category.value })}
-                                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                                  timeFormData.category === category.value
-                                    ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
-                                }`}
-                              >
-                                <div className="font-medium">{category.label}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {category.value === 'backend' && 'Server, API, database work'}
-                                  {category.value === 'frontend' && 'Web interface development'}
-                                  {category.value === 'ai_development' && 'Building AI models and systems'}
-                                  {category.value === 'ai' && 'AI integration and implementation'}
-                                  {category.value === 'ios_native' && 'Native iOS app development'}
-                                  {category.value === 'android_native' && 'Native Android app development'}
-                                  {category.value === 'react_native' && 'Cross-platform React Native apps'}
-                                  {category.value === 'flutter' && 'Cross-platform Flutter apps'}
-                                  {category.value === 'ui_ux_design' && 'Interface design, user experience'}
-                                  {category.value === 'devops' && 'Infrastructure, CI/CD, deployment'}
-                                  {category.value === 'project_management' && 'Planning, coordination, reporting'}
-                                  {category.value === 'qa' && 'Testing, quality assurance'}
-                                  {category.value === 'workshop' && 'Training sessions, workshops'}
-                                  {category.value === 'meeting' && 'Client meetings, team sync'}
-                                  {category.value === 'video_production' && 'Editing, recording, streaming'}
-                                  {category.value === 'other' && 'Other development tasks'}
-                                </div>
-                              </button>
+                              <option key={category.value} value={category.value}>
+                                {category.label}
+                              </option>
                             ))}
-                          </div>
+                          </select>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -739,7 +719,7 @@ export default function DashboardPage() {
       // Reset form and refresh data
       setTimeFormData({
         description: '',
-        category: 'other' as WorkCategory,
+        category: '' as WorkCategory,
         hours: '',
         date: format(new Date(), 'yyyy-MM-dd')
       });
