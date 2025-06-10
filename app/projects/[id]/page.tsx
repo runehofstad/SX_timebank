@@ -22,7 +22,9 @@ import {
   AlertCircle,
   Plus,
   X,
-  FileDown
+  FileDown,
+  Search,
+  Sparkles
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
@@ -42,6 +44,17 @@ const toDate = (timestamp: any): Date => {
   return new Date();
 };
 
+// Category groups for better organization
+const categoryGroups: Record<string, WorkCategory[]> = {
+  'Development': ['backend', 'frontend', 'ios_native', 'android_native', 'react_native', 'flutter'],
+  'AI & Innovation': ['ai_development', 'ai'],
+  'Design & UX': ['ui_ux_design'],
+  'Operations': ['devops', 'qa'],
+  'Management': ['project_management', 'meeting', 'workshop'],
+  'Creative': ['video_production'],
+  'Other': ['other']
+};
+
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { userProfile } = useAuth();
@@ -57,6 +70,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [showEditTimebankModal, setShowEditTimebankModal] = useState(false);
   const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
   const [timeRegistrationMode, setTimeRegistrationMode] = useState<'default' | 'multiple'>('default');
+  const [categorySearch, setCategorySearch] = useState('');
+  const [recentCategories, setRecentCategories] = useState<WorkCategory[]>([]);
   const [timeFormData, setTimeFormData] = useState({
     description: '',
     category: 'other' as WorkCategory,
@@ -105,6 +120,33 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       fetchProjectData();
     }
   }, [params.id]);
+
+  // Load recent categories when user profile is available
+  useEffect(() => {
+    if (userProfile && timeEntries.length > 0) {
+      // Get user's recent categories from their time entries
+      const userEntries = timeEntries
+        .filter(entry => entry.userId === userProfile.id)
+        .sort((a, b) => toDate(b.date).getTime() - toDate(a.date).getTime())
+        .slice(0, 20); // Last 20 entries
+
+      // Count category usage
+      const categoryCount = new Map<WorkCategory, number>();
+      userEntries.forEach(entry => {
+        if (entry.category) {
+          categoryCount.set(entry.category, (categoryCount.get(entry.category) || 0) + 1);
+        }
+      });
+
+      // Sort by usage and get top 4
+      const sortedCategories = Array.from(categoryCount.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([category]) => category);
+
+      setRecentCategories(sortedCategories);
+    }
+  }, [userProfile, timeEntries]);
 
   const fetchProjectData = async () => {
     try {
@@ -262,6 +304,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         date: format(new Date(), 'yyyy-MM-dd')
       });
       setShowTimeModal(false);
+      setCategorySearch('');
       await fetchProjectData();
     } catch (error) {
       console.error('Error registering time:', error);
@@ -357,6 +400,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         weekData: {}
       });
       setShowTimeModal(false);
+      setCategorySearch('');
       await fetchProjectData();
     } catch (error) {
       console.error('Error registering multiple time entries:', error);
@@ -1214,7 +1258,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
 
           {/* Register Time Modal */}
           <Transition appear show={showTimeModal} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={() => setShowTimeModal(false)}>
+            <Dialog as="div" className="relative z-10" onClose={() => { setShowTimeModal(false); setCategorySearch(''); }}>
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
@@ -1245,7 +1289,10 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                       >
                         Register Time
                         <button
-                          onClick={() => setShowTimeModal(false)}
+                          onClick={() => {
+                            setShowTimeModal(false);
+                            setCategorySearch('');
+                          }}
                           className="text-gray-400 hover:text-gray-500 dark:text-muted-foreground"
                         >
                           <X className="h-6 w-6" />
@@ -1309,45 +1356,107 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                             What type of work did you do?
                           </label>
-                          <div className="grid grid-cols-2 gap-3">
-                            {workCategories.map((category) => (
-                              <button
-                                key={category.value}
-                                type="button"
-                                onClick={() => {
-                                  if (timeRegistrationMode === 'default') {
-                                    setTimeFormData({ ...timeFormData, category: category.value });
-                                  } else {
-                                    setMultipleTimeFormData({ ...multipleTimeFormData, category: category.value });
-                                  }
-                                }}
-                                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                                  (timeRegistrationMode === 'default' ? timeFormData.category : multipleTimeFormData.category) === category.value
-                                    ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x'
-                                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
-                                }`}
-                              >
-                                <div className="font-medium">{category.label}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {category.value === 'backend' && 'Server, API, database work'}
-                                  {category.value === 'frontend' && 'Web interface development'}
-                                  {category.value === 'ai_development' && 'Building AI models and systems'}
-                                  {category.value === 'ai' && 'AI integration and implementation'}
-                                  {category.value === 'ios_native' && 'Native iOS app development'}
-                                  {category.value === 'android_native' && 'Native Android app development'}
-                                  {category.value === 'react_native' && 'Cross-platform React Native apps'}
-                                  {category.value === 'flutter' && 'Cross-platform Flutter apps'}
-                                  {category.value === 'ui_ux_design' && 'Interface design, user experience'}
-                                  {category.value === 'devops' && 'Infrastructure, CI/CD, deployment'}
-                                  {category.value === 'project_management' && 'Planning, coordination, reporting'}
-                                  {category.value === 'qa' && 'Testing, quality assurance'}
-                                  {category.value === 'workshop' && 'Training sessions, workshops'}
-                                  {category.value === 'meeting' && 'Client meetings, team sync'}
-                                  {category.value === 'video_production' && 'Editing, recording, streaming'}
-                                  {category.value === 'other' && 'Other development tasks'}
+                          
+                          {/* Search bar */}
+                          <div className="relative mb-4">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                              type="text"
+                              value={categorySearch}
+                              onChange={(e) => setCategorySearch(e.target.value)}
+                              placeholder="Search categories..."
+                              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input"
+                            />
+                          </div>
+
+                          {/* Recent categories */}
+                          {recentCategories.length > 0 && categorySearch === '' && (
+                            <div className="mb-6">
+                              <div className="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Recently used
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {recentCategories.map((categoryValue) => {
+                                  const category = workCategories.find(c => c.value === categoryValue);
+                                  if (!category) return null;
+                                  const isSelected = (timeRegistrationMode === 'default' ? timeFormData.category : multipleTimeFormData.category) === category.value;
+                                  
+                                  return (
+                                    <button
+                                      key={category.value}
+                                      type="button"
+                                      onClick={() => {
+                                        if (timeRegistrationMode === 'default') {
+                                          setTimeFormData({ ...timeFormData, category: category.value });
+                                        } else {
+                                          setMultipleTimeFormData({ ...multipleTimeFormData, category: category.value });
+                                        }
+                                      }}
+                                      className={`p-3 rounded-lg border-2 text-left transition-all ${
+                                        isSelected
+                                          ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x'
+                                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+                                      }`}
+                                    >
+                                      <div className="font-medium text-sm">{category.label}</div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* All categories grouped */}
+                          <div className="space-y-4 max-h-96 overflow-y-auto">
+                            {Object.entries(categoryGroups).map(([groupName, categoryValues]) => {
+                              // Filter categories based on search
+                              const filteredCategories = categoryValues
+                                .map(value => workCategories.find(c => c.value === value))
+                                .filter(category => 
+                                  category && 
+                                  (categorySearch === '' || 
+                                   category.label.toLowerCase().includes(categorySearch.toLowerCase()) ||
+                                   category.value.toLowerCase().includes(categorySearch.toLowerCase()))
+                                );
+
+                              if (filteredCategories.length === 0) return null;
+
+                              return (
+                                <div key={groupName}>
+                                  <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+                                    {groupName}
+                                  </h4>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {filteredCategories.map((category) => {
+                                      if (!category) return null;
+                                      const isSelected = (timeRegistrationMode === 'default' ? timeFormData.category : multipleTimeFormData.category) === category.value;
+                                      
+                                      return (
+                                        <button
+                                          key={category.value}
+                                          type="button"
+                                          onClick={() => {
+                                            if (timeRegistrationMode === 'default') {
+                                              setTimeFormData({ ...timeFormData, category: category.value });
+                                            } else {
+                                              setMultipleTimeFormData({ ...multipleTimeFormData, category: category.value });
+                                            }
+                                          }}
+                                          className={`p-3 rounded-lg border text-left transition-all ${
+                                            isSelected
+                                              ? 'border-studio-x bg-studio-x-50 dark:bg-studio-x/10 text-studio-x-700 dark:text-studio-x border-2'
+                                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+                                          }`}
+                                        >
+                                          <div className="font-medium text-sm">{category.label}</div>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
-                              </button>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
 
@@ -1474,7 +1583,10 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                         <div className="mt-8 flex justify-end space-x-4 pt-6 border-t dark:border-gray-700">
                           <button
                             type="button"
-                            onClick={() => setShowTimeModal(false)}
+                            onClick={() => {
+                              setShowTimeModal(false);
+                              setCategorySearch('');
+                            }}
                             className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
                           >
                             Cancel
