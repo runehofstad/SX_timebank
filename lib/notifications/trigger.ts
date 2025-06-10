@@ -1,5 +1,30 @@
 // import { Timebank } from '@/types';
 
+export async function triggerNotification(type: string, data: any) {
+  try {
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        type,
+        data,
+        triggerImmediately: true 
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to trigger notification:', response.statusText);
+    }
+
+    const result = await response.json();
+    console.log('Notification trigger result:', result);
+  } catch (error) {
+    console.error('Error triggering notification:', error);
+  }
+}
+
 export async function checkTimebankNotifications(timebankId?: string) {
   try {
     // Call the notifications API endpoint

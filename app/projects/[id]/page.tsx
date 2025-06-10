@@ -31,6 +31,7 @@ import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { Dialog, Transition } from '@headlessui/react';
 import { WorkCategory } from '@/types';
+import { triggerNotification } from '@/lib/notifications/trigger';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -280,32 +281,41 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       
       // Get active timebanks sorted by remaining hours (ascending, to use smaller ones first)
       const activeTimebanks = timebanks
-        .filter(tb => tb.status === 'active' && tb.remainingHours > 0)
+        .filter(tb => tb.status === 'active')
         .sort((a, b) => a.remainingHours - b.remainingHours);
 
       if (activeTimebanks.length === 0) {
         throw new Error('No active timebanks available for this project');
       }
 
-      // Check if total available hours is sufficient
+      // Allow negative balance - just warn if going negative
       const totalAvailableHours = activeTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
-      if (hours > totalAvailableHours) {
-        throw new Error(`Not enough hours available. Total available: ${totalAvailableHours.toFixed(2)} hours`);
-      }
+      const willGoNegative = hours > totalAvailableHours;
 
-      // Allocate hours across timebanks
+      // Allocate hours across timebanks (allow going negative on the last one)
       let remainingHours = hours;
       const allocations: { timebankId: string; hours: number }[] = [];
 
-      for (const timebank of activeTimebanks) {
+      for (let i = 0; i < activeTimebanks.length; i++) {
+        const timebank = activeTimebanks[i];
         if (remainingHours <= 0) break;
 
-        const hoursToAllocate = Math.min(remainingHours, timebank.remainingHours);
-        allocations.push({
-          timebankId: timebank.id,
-          hours: hoursToAllocate
-        });
-        remainingHours -= hoursToAllocate;
+        let hoursToAllocate: number;
+        if (i === activeTimebanks.length - 1) {
+          // Last timebank - allocate all remaining hours even if it goes negative
+          hoursToAllocate = remainingHours;
+        } else {
+          // Not the last timebank - only use what's available
+          hoursToAllocate = Math.min(remainingHours, Math.max(0, timebank.remainingHours));
+        }
+        
+        if (hoursToAllocate > 0) {
+          allocations.push({
+            timebankId: timebank.id,
+            hours: hoursToAllocate
+          });
+          remainingHours -= hoursToAllocate;
+        }
       }
 
       // Create time entries and update timebanks
@@ -461,6 +471,9 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       );
       
       if (existingActiveTimebank) {
+        // Check if timebank was negative before adding hours
+        const wasNegative = existingActiveTimebank.remainingHours < 0;
+        
         // Accumulate hours to existing timebank
         const currentRemainingHours = existingActiveTimebank.remainingHours || 0;
         const newRemainingHours = currentRemainingHours + newHours;
@@ -478,6 +491,18 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
           expiryDate: timebankFormData.expiryDate ? new Date(timebankFormData.expiryDate) : null,
           updatedAt: new Date()
         });
+        
+        // Send push notification if timebank was negative
+        if (wasNegative && client) {
+          await triggerNotification('timebank_negative_topup', {
+            recipientId: project.clientId,
+            clientName: client.name,
+            projectName: project.name,
+            previousBalance: currentRemainingHours,
+            addedHours: newHours,
+            newBalance: newRemainingHours
+          });
+        }
       } else {
         // Create new timebank if none exists
         const timebankName = timebankFormData.name.trim() || `${project.name} Timebank`;

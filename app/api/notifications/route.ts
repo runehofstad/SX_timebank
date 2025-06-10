@@ -104,8 +104,98 @@ async function sendPushNotifications(
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    // Check if this is a custom notification request
+    const body = await request.json().catch(() => null);
+    
+    if (body?.type === 'timebank_negative_topup') {
+      // Handle immediate notification for negative timebank top-up
+      const { data } = body;
+      
+      // Get client and users
+      const clientDoc = await adminDb.collection('clients').doc(data.recipientId).get();
+      const client = { id: clientDoc.id, ...clientDoc.data() } as Client;
+      
+      // Get all users to notify
+      const usersSnapshot = await adminDb.collection('users').get();
+      const users = usersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as User));
+      
+      // Get projects for context
+      const projectsSnapshot = await adminDb.collection('projects')
+        .where('clientId', '==', data.recipientId)
+        .get();
+      const projects = projectsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as Project));
+      
+      // Prepare notification message
+      const title = 'Negative Timebank Topped Up';
+      const body = `${data.clientName}'s timebank for ${data.projectName} was negative (${data.previousBalance.toFixed(1)} hours) and has been topped up with ${data.addedHours} hours. New balance: ${data.newBalance.toFixed(1)} hours.`;
+      
+      // Send push notifications to admins and project members
+      const notificationRecipients: User[] = [];
+      
+      // Add admins
+      const admins = users.filter(u => u.role === 'admin' && u.pushNotificationsEnabled && u.fcmTokens?.length);
+      notificationRecipients.push(...admins);
+      
+      // Add project team members
+      const projectUserIds = new Set<string>();
+      projects.forEach(project => {
+        project.teamMembers?.forEach(userId => projectUserIds.add(userId));
+      });
+      
+      const projectUsers = users.filter(u => 
+        projectUserIds.has(u.id) && 
+        u.pushNotificationsEnabled && 
+        u.fcmTokens?.length
+      );
+      notificationRecipients.push(...projectUsers);
+      
+      // Remove duplicates
+      const uniqueRecipients = Array.from(new Map(notificationRecipients.map(u => [u.id, u])).values());
+      
+      // Collect all FCM tokens
+      const allTokens: string[] = [];
+      uniqueRecipients.forEach(user => {
+        if (user.fcmTokens) {
+          allTokens.push(...user.fcmTokens);
+        }
+      });
+      
+      if (allTokens.length > 0) {
+        const messages = allTokens.map(token => ({
+          token,
+          notification: {
+            title,
+            body,
+          },
+          webpush: {
+            fcmOptions: {
+              link: `/projects/${data.projectName}`
+            }
+          }
+        }));
+        
+        // Send notifications
+        const response = await adminMessaging.sendEach(messages);
+        console.log(`Sent ${response.successCount} negative timebank top-up notifications`);
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Negative timebank top-up notification sent',
+        notificationsSent: allTokens.length 
+      });
+    }
+    
+    // Original notification check logic continues below...
+    
     // Get system settings
     const settingsDoc = await adminDb.collection('system').doc('settings').get();
     const settings = settingsDoc.data() || {};
