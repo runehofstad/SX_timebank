@@ -31,7 +31,6 @@ import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
 import { Dialog, Transition } from '@headlessui/react';
 import { WorkCategory } from '@/types';
-import { triggerNotification } from '@/lib/notifications/trigger';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
