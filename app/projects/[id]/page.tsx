@@ -69,8 +69,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [activeTab, setActiveTab] = useState<'overview' | 'timeentries' | 'team'>('overview');
   const [showTimeModal, setShowTimeModal] = useState(false);
   const [showTimebankModal, setShowTimebankModal] = useState(false);
-  const [showEditTimebankModal, setShowEditTimebankModal] = useState(false);
-  const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
+  // const [showEditTimebankModal, setShowEditTimebankModal] = useState(false); // Removed edit functionality
+  // const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null); // Removed edit functionality
   const [timeRegistrationMode, setTimeRegistrationMode] = useState<'default' | 'multiple'>('default');
   const [recentCategories, setRecentCategories] = useState<WorkCategory[]>([]);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
@@ -102,13 +102,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       expiryDate: format(oneYearLater, 'yyyy-MM-dd')
     };
   });
-  const [editTimebankFormData, setEditTimebankFormData] = useState({
-    name: '',
-    description: '',
-    totalHours: '',
-    remainingHours: '',
-    expiryDate: ''
-  });
+  // const [editTimebankFormData, setEditTimebankFormData] = useState({
+  //   name: '',
+  //   description: '',
+  //   totalHours: '',
+  //   remainingHours: '',
+  //   expiryDate: ''
+  // }); // Removed edit functionality
   const [submitting, setSubmitting] = useState(false);
   
   // Filter states
@@ -573,7 +573,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     }
   };
 
-  const handleEditTimebank = async (e: React.FormEvent) => {
+  // Removed edit functionality
+  /* const handleEditTimebank = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingTimebank) return;
 
@@ -608,7 +609,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       
       await updateDoc(timebankRef, updateData);
       
-      setShowEditTimebankModal(false);
+      // setShowEditTimebankModal(false); // Removed edit functionality
       setEditingTimebank(null);
       await fetchProjectData();
     } catch (error) {
@@ -617,21 +618,22 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
     } finally {
       setSubmitting(false);
     }
-  };
+  }; */
 
-  const openEditTimebankModal = (timebank: Timebank) => {
-    setEditingTimebank(timebank);
-    setEditTimebankFormData({
-      name: timebank.name,
-      description: timebank.description || '',
-      totalHours: timebank.totalHours.toString(),
-      remainingHours: timebank.remainingHours.toString(),
-      expiryDate: timebank.expiryDate 
-        ? format(toDate(timebank.expiryDate), 'yyyy-MM-dd')
-        : ''
-    });
-    setShowEditTimebankModal(true);
-  };
+  // Removed edit timebank functionality
+  // const openEditTimebankModal = (timebank: Timebank) => {
+  //   setEditingTimebank(timebank);
+  //   setEditTimebankFormData({
+  //     name: timebank.name,
+  //     description: timebank.description || '',
+  //     totalHours: timebank.totalHours.toString(),
+  //     remainingHours: timebank.remainingHours.toString(),
+  //     expiryDate: timebank.expiryDate 
+  //       ? format(toDate(timebank.expiryDate), 'yyyy-MM-dd')
+  //       : ''
+  //   });
+  //   setShowEditTimebankModal(true);
+  // };
 
   const handleDeleteTimebank = async (timebankId: string) => {
     // Check if timebank has been used
@@ -1268,11 +1270,16 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                                 <div className="flex items-center space-x-2">
                                   {userProfile?.role === 'admin' && (
                                     <button
-                                      onClick={() => openEditTimebankModal(timebank)}
-                                      className="p-1.5 rounded-md text-gray-500 hover:text-studio-x hover:bg-gray-100 transition-colors"
-                                      title="Edit timebank"
+                                      onClick={() => handleDeleteTimebank(timebank.id)}
+                                      disabled={timebank.usedHours > 0}
+                                      className={`p-1.5 rounded-md transition-colors ${
+                                        timebank.usedHours > 0 
+                                          ? 'text-gray-400 cursor-not-allowed' 
+                                          : 'text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20'
+                                      }`}
+                                      title={timebank.usedHours > 0 ? 'Cannot delete - hours have been used' : 'Delete timebank'}
                                     >
-                                      <Edit className="h-4 w-4" />
+                                      <Trash2 className="h-4 w-4" />
                                     </button>
                                   )}
                                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -2120,8 +2127,8 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
             </Dialog>
           </Transition>
 
-          {/* Edit Timebank Modal */}
-          <Transition appear show={showEditTimebankModal} as={Fragment}>
+          {/* Edit Timebank Modal - Removed edit functionality */}
+          {/* <Transition appear show={showEditTimebankModal} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={() => setShowEditTimebankModal(false)}>
               <Transition.Child
                 as={Fragment}
@@ -2272,7 +2279,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             <button
                               type="button"
                               onClick={() => {
-                                setShowEditTimebankModal(false);
+                                // setShowEditTimebankModal(false); // Removed edit functionality
                                 setEditingTimebank(null);
                               }}
                               className="px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-studio-x transition-colors"
@@ -2294,7 +2301,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                 </div>
               </div>
             </Dialog>
-          </Transition>
+          </Transition> */}
 
           {/* Edit Time Entry Modal */}
           <Transition appear show={showEditTimeModal} as={Fragment}>
