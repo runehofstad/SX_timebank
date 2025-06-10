@@ -22,7 +22,9 @@ import {
   AlertCircle,
   Plus,
   X,
-  FileDown
+  FileDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { formatHours, calculateTimebankStatus, getStatusColor, workCategories, getCategoryLabel } from '@/utils/timebank';
@@ -69,6 +71,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   const [editingTimebank, setEditingTimebank] = useState<Timebank | null>(null);
   const [timeRegistrationMode, setTimeRegistrationMode] = useState<'default' | 'multiple'>('default');
   const [recentCategories, setRecentCategories] = useState<WorkCategory[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [timeFormData, setTimeFormData] = useState({
     description: '',
     category: '' as WorkCategory,
@@ -226,6 +229,44 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
       });
     }
     return dates;
+  };
+
+  // Navigate to previous week
+  const goToPreviousWeek = () => {
+    const newWeek = new Date(selectedWeek);
+    newWeek.setDate(newWeek.getDate() - 7);
+    setSelectedWeek(newWeek);
+  };
+
+  // Navigate to next week
+  const goToNextWeek = () => {
+    const newWeek = new Date(selectedWeek);
+    newWeek.setDate(newWeek.getDate() + 7);
+    setSelectedWeek(newWeek);
+  };
+
+  // Get week range string
+  const getWeekRangeString = (date: Date) => {
+    const weekDates = getWeekDates(date);
+    const firstDay = new Date(weekDates[0].date);
+    const lastDay = new Date(weekDates[6].date);
+    
+    if (firstDay.getMonth() === lastDay.getMonth()) {
+      return `${format(firstDay, 'MMM d')} - ${format(lastDay, 'd, yyyy')}`;
+    } else if (firstDay.getFullYear() === lastDay.getFullYear()) {
+      return `${format(firstDay, 'MMM d')} - ${format(lastDay, 'MMM d, yyyy')}`;
+    } else {
+      return `${format(firstDay, 'MMM d, yyyy')} - ${format(lastDay, 'MMM d, yyyy')}`;
+    }
+  };
+
+  // Check if a date is in the current week
+  const isCurrentWeek = (date: Date) => {
+    const now = new Date();
+    const weekDates = getWeekDates(date);
+    const firstDay = new Date(weekDates[0].date);
+    const lastDay = new Date(weekDates[6].date);
+    return now >= firstDay && now <= lastDay;
   };
 
   const handleRegisterTime = async (e: React.FormEvent) => {
@@ -1451,47 +1492,107 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                                 Enter hours for each day
                               </label>
-                              <div className="space-y-2">
-                                {getWeekDates(new Date()).map((day) => (
-                                  <div
-                                    key={day.date}
-                                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                                      day.isWeekend 
-                                        ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700' 
-                                        : 'bg-white dark:bg-card border-gray-300 dark:border-gray-600'
-                                    }`}
+                              
+                              {/* Week navigation */}
+                              <div className="flex items-center justify-between mb-4 bg-gray-50 dark:bg-secondary rounded-lg p-3">
+                                <button
+                                  type="button"
+                                  onClick={goToPreviousWeek}
+                                  className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                  aria-label="Previous week"
+                                >
+                                  <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                </button>
+                                
+                                <div className="flex flex-col items-center">
+                                  <span className="text-sm font-medium text-gray-900 dark:text-foreground">
+                                    {getWeekRangeString(selectedWeek)}
+                                  </span>
+                                  {isCurrentWeek(selectedWeek) && (
+                                    <span className="text-xs text-studio-x font-medium mt-0.5">Current Week</span>
+                                  )}
+                                </div>
+                                
+                                <button
+                                  type="button"
+                                  onClick={goToNextWeek}
+                                  className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                                  aria-label="Next week"
+                                >
+                                  <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                </button>
+                              </div>
+                              
+                              {/* Quick navigation */}
+                              {!isCurrentWeek(selectedWeek) && (
+                                <div className="text-center mb-4">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedWeek(new Date())}
+                                    className="text-sm text-studio-x hover:text-studio-x-600 font-medium"
                                   >
-                                    <div className="flex items-center space-x-3">
-                                      <div className="text-center">
-                                        <div className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                                          {day.dayName}
+                                    ← Back to current week
+                                  </button>
+                                </div>
+                              )}
+                              
+                              <div className="space-y-2">
+                                {getWeekDates(selectedWeek).map((day) => {
+                                  const isToday = format(new Date(), 'yyyy-MM-dd') === day.date;
+                                  return (
+                                    <div
+                                      key={day.date}
+                                      className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                                        isToday
+                                          ? 'bg-studio-x-50 dark:bg-studio-x/10 border-studio-x dark:border-studio-x/50 ring-2 ring-studio-x/20'
+                                          : day.isWeekend 
+                                            ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700' 
+                                            : 'bg-white dark:bg-card border-gray-300 dark:border-gray-600'
+                                      }`}
+                                    >
+                                      <div className="flex items-center space-x-3">
+                                        <div className="text-center">
+                                          <div className={`text-xs font-medium ${
+                                            isToday ? 'text-studio-x' : 'text-gray-500 dark:text-gray-400'
+                                          }`}>
+                                            {day.dayName}
+                                          </div>
+                                          <div className={`text-lg font-semibold ${
+                                            isToday ? 'text-studio-x' : 'text-gray-900 dark:text-foreground'
+                                          }`}>
+                                            {day.dayNumber}
+                                          </div>
                                         </div>
-                                        <div className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                                          {day.dayNumber}
+                                        <div className="flex flex-col">
+                                          <div className={`text-sm ${
+                                            isToday ? 'text-studio-x-700 dark:text-studio-x font-medium' : 'text-gray-600 dark:text-gray-400'
+                                          }`}>
+                                            {format(new Date(day.date), 'MMM d, yyyy')}
+                                          </div>
+                                          {isToday && (
+                                            <span className="text-xs text-studio-x font-medium">Today</span>
+                                          )}
                                         </div>
                                       </div>
-                                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                                        {format(new Date(day.date), 'MMM d, yyyy')}
-                                      </div>
+                                      <input
+                                        type="number"
+                                        step="0.25"
+                                        min="0"
+                                        max="24"
+                                        value={multipleTimeFormData.weekData[day.date] || ''}
+                                        onChange={(e) => setMultipleTimeFormData({
+                                          ...multipleTimeFormData,
+                                          weekData: {
+                                            ...multipleTimeFormData.weekData,
+                                            [day.date]: e.target.value
+                                          }
+                                        })}
+                                        className="w-24 px-3 py-2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-center"
+                                        placeholder="0"
+                                      />
                                     </div>
-                                    <input
-                                      type="number"
-                                      step="0.25"
-                                      min="0"
-                                      max="24"
-                                      value={multipleTimeFormData.weekData[day.date] || ''}
-                                      onChange={(e) => setMultipleTimeFormData({
-                                        ...multipleTimeFormData,
-                                        weekData: {
-                                          ...multipleTimeFormData.weekData,
-                                          [day.date]: e.target.value
-                                        }
-                                      })}
-                                      className="w-24 px-3 py-2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-studio-x focus:ring-studio-x text-gray-900 dark:text-foreground bg-white dark:bg-input text-center"
-                                      placeholder="0"
-                                    />
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                               <div className="mt-3 flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                                 <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Total hours for the week:</span>
