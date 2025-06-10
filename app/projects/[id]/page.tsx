@@ -584,7 +584,16 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   };
 
   const handleDeleteTimebank = async (timebankId: string) => {
-    if (!window.confirm('Are you sure you want to delete this timebank? This action cannot be undone.')) {
+    // Check if timebank has been used
+    const timebank = timebanks.find(tb => tb.id === timebankId);
+    if (!timebank) return;
+
+    if (timebank.usedHours > 0) {
+      alert('Cannot delete a timebank that has been used. You can only delete unused timebanks where hours were entered incorrectly.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this unused timebank? This action cannot be undone.')) {
       return;
     }
 
@@ -1940,8 +1949,16 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <div className="flex items-start">
                             <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 mr-2" />
                             <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                              <p className="font-medium">Important Note:</p>
-                              <p className="mt-1">Changing the total hours will maintain the used hours ({formatHours(editingTimebank?.usedHours || 0)}) and automatically recalculate the remaining hours.</p>
+                              <p className="font-medium">Important Notes:</p>
+                              <ul className="mt-1 list-disc list-inside space-y-1">
+                                <li>Changing the total hours will maintain the used hours ({formatHours(editingTimebank?.usedHours || 0)}) and automatically recalculate the remaining hours.</li>
+                                {editingTimebank && editingTimebank.usedHours > 0 && (
+                                  <li>This timebank cannot be deleted because it has been used. Only unused timebanks can be deleted.</li>
+                                )}
+                                {editingTimebank && editingTimebank.usedHours === 0 && (
+                                  <li>This timebank can be deleted if it was created with incorrect hours.</li>
+                                )}
+                              </ul>
                             </div>
                           </div>
                         </div>
@@ -1950,7 +1967,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           <button
                             type="button"
                             onClick={() => handleDeleteTimebank(editingTimebank!.id)}
-                            className="px-6 py-3 text-base font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card focus:ring-red-500 transition-colors"
+                            disabled={!!(editingTimebank && editingTimebank.usedHours > 0)}
+                            className={`px-6 py-3 text-base font-medium border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-card transition-colors ${
+                              editingTimebank && editingTimebank.usedHours > 0
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'text-white bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                            }`}
+                            title={editingTimebank && editingTimebank.usedHours > 0 ? 'Cannot delete a timebank that has been used' : 'Delete this timebank'}
                           >
                             <Trash2 className="inline h-4 w-4 mr-2" />
                             Delete Timebank
