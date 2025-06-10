@@ -151,19 +151,19 @@ export default function DashboardPage() {
       const totalHoursUsed = timebanks.reduce((sum, tb) => sum + (tb.usedHours || 0), 0);
       const projectsInProgress = projects.length;
       
-      // Debug logging
-      console.log('Dashboard Stats Debug:', {
-        totalTimebanks: timebanks.length,
-        activeTimebanks,
-        activeTimebanksList: activeTimebanksList.map(tb => ({ 
-          id: tb.id, 
-          name: tb.name, 
-          remainingHours: tb.remainingHours 
-        })),
-        totalHoursAvailable,
-        totalHoursFromAllTimebanks: timebanks.reduce((sum, tb) => sum + (tb.remainingHours || 0), 0),
-        timebankStatuses: timebanks.map(tb => ({ id: tb.id, name: tb.name, status: tb.status }))
-      });
+      // Temporary debug for dashboard stats
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        console.log('Dashboard Stats:', {
+          activeTimebanks: activeTimebanks,
+          totalHoursAvailable: totalHoursAvailable,
+          activeTBDetails: activeTimebanksList.map(tb => ({
+            name: tb.name,
+            remainingHours: tb.remainingHours,
+            totalHours: tb.totalHours,
+            usedHours: tb.usedHours
+          }))
+        });
+      }
       
       // Group timebanks by clientId
       const timebanksByClient = timebanks.reduce((acc, tb) => {
@@ -336,7 +336,7 @@ export default function DashboardPage() {
       color: 'bg-green-500',
     },
     {
-      name: 'Hours Available',
+      name: 'Timebank Hours Left',
       value: stats.totalHoursAvailable.toFixed(1),
       icon: Clock,
       color: 'bg-yellow-500',

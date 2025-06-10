@@ -2350,7 +2350,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                             value={editTimeFormData.description}
                             onChange={(e) => setEditTimeFormData({ ...editTimeFormData, description: e.target.value })}
                             className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-studio-x focus:border-studio-x sm:text-sm dark:bg-gray-800 dark:text-white"
-                            required
+                            placeholder="Optional description"
                           />
                         </div>
 
