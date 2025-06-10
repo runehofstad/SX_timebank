@@ -1966,13 +1966,14 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           >
                             Cancel
                           </button>
-                          <button
-                            type="submit"
-                            disabled={submitting}
-                            className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                          >
-                            {submitting ? 'Saving...' : 'Save Changes'}
-                          </button>
+                            <button
+                              type="submit"
+                              disabled={submitting}
+                              className="px-6 py-3 text-base font-medium text-white bg-studio-x border border-transparent rounded-lg hover:bg-studio-x-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-studio-x disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {submitting ? 'Saving...' : 'Save Changes'}
+                            </button>
+                          </div>
                         </div>
                       </form>
                     </Dialog.Panel>
