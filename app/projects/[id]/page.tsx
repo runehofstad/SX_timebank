@@ -1246,7 +1246,11 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
                           }
                           
                           return (
-                            <div key={timebank.id} className="border rounded-lg p-4">
+                            <div key={timebank.id} className={`border rounded-lg p-4 ${
+                              timebank.remainingHours < 0 
+                                ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50' 
+                                : ''
+                            }`}>
                               <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                   <h4 className="font-medium text-gray-900 dark:text-foreground">{timebank.name}</h4>

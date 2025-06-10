@@ -138,7 +138,11 @@ export default function TimebanksPage() {
                 const percentageUsed = (timebank.usedHours / timebank.totalHours) * 100;
                 
                 return (
-                  <div key={timebank.id} className="bg-white overflow-hidden shadow rounded-lg">
+                  <div key={timebank.id} className={`overflow-hidden shadow rounded-lg ${
+                    timebank.remainingHours < 0 
+                      ? 'bg-red-50 dark:bg-red-950/20' 
+                      : 'bg-white dark:bg-card'
+                  }`}>
                     <div className="p-5">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -157,10 +161,15 @@ export default function TimebanksPage() {
                       <div className="mt-4">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500 dark:text-muted-foreground">Hours Used</span>
-                          <span className="font-medium">
+                          <span className={`font-medium ${timebank.remainingHours < 0 ? 'text-red-600' : ''}`}>
                             {formatHours(timebank.usedHours)} / {formatHours(timebank.totalHours)}
                           </span>
                         </div>
+                        {timebank.remainingHours < 0 && (
+                          <div className="mt-2 text-sm font-medium text-red-600">
+                            {formatHours(Math.abs(timebank.remainingHours))} hours over limit
+                          </div>
+                        )}
                         <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
                           <div
                             className={`${getStatusColor(status)} h-2 rounded-full transition-all duration-300`}

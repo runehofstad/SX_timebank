@@ -494,7 +494,11 @@ export default function DashboardPage() {
                     return (
                       <div 
                         key={project.id} 
-                        className="border dark:border-border rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-700 transition-shadow dark:shadow-gray-800"
+                        className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                          project.remainingHours < 0 
+                            ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/50' 
+                            : 'dark:border-border dark:hover:shadow-gray-700 dark:shadow-gray-800'
+                        }`}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div 
