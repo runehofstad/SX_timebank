@@ -104,18 +104,33 @@ async function sendPushNotifications(
   }
 }
 
+interface CustomNotificationRequest {
+  type: string;
+  data: {
+    recipientId: string;
+    clientName: string;
+    projectName: string;
+    previousBalance: number;
+    addedHours: number;
+    newBalance: number;
+  };
+  triggerImmediately?: boolean;
+}
+
 export async function POST(request: Request) {
   try {
     // Check if this is a custom notification request
-    const body = await request.json().catch(() => null);
+    const body: CustomNotificationRequest | null = await request.json().catch(() => null);
     
     if (body?.type === 'timebank_negative_topup') {
       // Handle immediate notification for negative timebank top-up
       const { data } = body;
       
-      // Get client and users
+      // Get client data
       const clientDoc = await adminDb.collection('clients').doc(data.recipientId).get();
-      const client = { id: clientDoc.id, ...clientDoc.data() } as Client;
+      if (!clientDoc.exists) {
+        return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+      }
       
       // Get all users to notify
       const usersSnapshot = await adminDb.collection('users').get();
@@ -134,8 +149,8 @@ export async function POST(request: Request) {
       } as Project));
       
       // Prepare notification message
-      const title = 'Negative Timebank Topped Up';
-      const body = `${data.clientName}'s timebank for ${data.projectName} was negative (${data.previousBalance.toFixed(1)} hours) and has been topped up with ${data.addedHours} hours. New balance: ${data.newBalance.toFixed(1)} hours.`;
+      const notificationTitle = 'Negative Timebank Topped Up';
+      const notificationBody = `${data.clientName}'s timebank for ${data.projectName} was negative (${data.previousBalance.toFixed(1)} hours) and has been topped up with ${data.addedHours} hours. New balance: ${data.newBalance.toFixed(1)} hours.`;
       
       // Send push notifications to admins and project members
       const notificationRecipients: User[] = [];
@@ -172,8 +187,8 @@ export async function POST(request: Request) {
         const messages = allTokens.map(token => ({
           token,
           notification: {
-            title,
-            body,
+            title: notificationTitle,
+            body: notificationBody,
           },
           webpush: {
             fcmOptions: {

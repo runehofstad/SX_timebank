@@ -1,6 +1,15 @@
 // import { Timebank } from '@/types';
 
-export async function triggerNotification(type: string, data: any) {
+interface NotificationData {
+  recipientId: string;
+  clientName: string;
+  projectName: string;
+  previousBalance: number;
+  addedHours: number;
+  newBalance: number;
+}
+
+export async function triggerNotification(type: string, data: NotificationData) {
   try {
     const response = await fetch('/api/notifications', {
       method: 'POST',

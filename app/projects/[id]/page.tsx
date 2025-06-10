@@ -288,9 +288,13 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         throw new Error('No active timebanks available for this project');
       }
 
-      // Allow negative balance - just warn if going negative
+      // Allow negative balance - no need to check
       const totalAvailableHours = activeTimebanks.reduce((sum, tb) => sum + tb.remainingHours, 0);
-      const willGoNegative = hours > totalAvailableHours;
+      
+      // Optional: Log if going negative for debugging
+      if (hours > totalAvailableHours) {
+        console.log(`Time registration will result in negative balance: ${hours - totalAvailableHours} hours`);
+      }
 
       // Allocate hours across timebanks (allow going negative on the last one)
       let remainingHours = hours;
