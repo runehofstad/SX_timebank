@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState, Fragment } from 'react';
-import { collection, query, where, getDocs, orderBy, limit, addDoc, updateDoc, doc, increment } from 'firebase/firestore';
+import { useEffect, useState, Fragment, useCallback } from 'react';
+import { collection, query, where, getDocs, orderBy, limit, addDoc, updateDoc, doc, increment, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardLayout from '@/components/ui/DashboardLayout';
+import PullToRefresh from '@/components/ui/PullToRefresh';
 import { DashboardStats, Timebank, Project, Client, WorkCategory } from '@/types';
 import { Users, Clock, FolderOpen, AlertTriangle, Filter, ArrowUpDown, DollarSign, Activity, X } from 'lucide-react';
 import { formatHours, workCategories } from '@/utils/timebank';
@@ -50,16 +51,6 @@ export default function DashboardPage() {
     date: format(new Date(), 'yyyy-MM-dd')
   });
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    if (userProfile) {
-      fetchDashboardData();
-    }
-  }, [userProfile]);
-  
-  useEffect(() => {
-    applyFilter(projectsWithTimebanks, filterType);
-  }, [filterType, projectsWithTimebanks]);
   
   const applyFilter = (projectsList: ProjectWithTimebank[], filter: FilterType) => {
     if (!projectsList || !Array.isArray(projectsList)) {
@@ -91,7 +82,7 @@ export default function DashboardPage() {
     setFilteredProjects(sorted);
   };
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       let clients: Record<string, Client> = {};
       let timebanks: Timebank[] = [];
@@ -248,7 +239,69 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userProfile, filterType]);
+
+  const handleRefresh = useCallback(async () => {
+    await fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (userProfile) {
+      fetchDashboardData();
+    }
+  }, [userProfile, fetchDashboardData]);
+
+  // Add real-time listeners for timeEntries and timebanks updates
+  useEffect(() => {
+    if (!userProfile) return;
+
+    const unsubscribers: (() => void)[] = [];
+
+    // Listen for new time entries
+    const timeEntriesQuery = query(
+      collection(db, 'timeEntries'),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
+    
+    const unsubscribeTimeEntries = onSnapshot(timeEntriesQuery, (snapshot) => {
+      if (!snapshot.empty && !snapshot.metadata.hasPendingWrites) {
+        // Check if this is a new entry (not the initial load)
+        const latestEntry = snapshot.docs[0].data();
+        const entryTime = latestEntry.createdAt?.toDate ? latestEntry.createdAt.toDate() : new Date(latestEntry.createdAt);
+        const now = new Date();
+        const timeDiff = now.getTime() - entryTime.getTime();
+        
+        // If entry was created in the last 10 seconds and not by current user, refresh
+        if (timeDiff < 10000 && latestEntry.userId !== userProfile.id) {
+          fetchDashboardData();
+        }
+      }
+    });
+    unsubscribers.push(unsubscribeTimeEntries);
+
+    // Listen for timebank updates
+    const timebanksQuery = collection(db, 'timebanks');
+    const unsubscribeTimebanks = onSnapshot(timebanksQuery, (snapshot) => {
+      if (!snapshot.metadata.hasPendingWrites) {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'modified') {
+            // Refresh dashboard when timebanks are updated
+            fetchDashboardData();
+          }
+        });
+      }
+    });
+    unsubscribers.push(unsubscribeTimebanks);
+
+    return () => {
+      unsubscribers.forEach(unsub => unsub());
+    };
+  }, [userProfile, fetchDashboardData]);
+  
+  useEffect(() => {
+    applyFilter(projectsWithTimebanks, filterType);
+  }, [filterType, projectsWithTimebanks]);
 
   const statCards = [
     {
@@ -280,7 +333,8 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <div className="space-y-6">
+        <PullToRefresh onRefresh={handleRefresh}>
+          <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-foreground">Dashboard</h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-muted-foreground">
@@ -647,6 +701,7 @@ export default function DashboardPage() {
             </Dialog>
           </Transition>
         </div>
+        </PullToRefresh>
       </DashboardLayout>
     </ProtectedRoute>
   );
