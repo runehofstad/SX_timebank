@@ -24,7 +24,10 @@
       "Bash(curl:*)",
       "Bash(node:*)",
       "Bash(firebase deploy:*)",
-      "Bash(sips:*)"
+      "Bash(sips:*)",
+      "Bash(firebase projects:list:*)",
+      "Bash(firebase use:*)",
+      "Bash(firebase auth:export:*)"
     ],
     "deny": []
   }

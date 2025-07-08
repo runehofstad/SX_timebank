@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, Auth, connectAuthEmulator, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getMessaging, Messaging, isSupported } from 'firebase/messaging';
 
@@ -21,6 +21,14 @@ let messaging: Messaging | null = null;
 try {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
   auth = getAuth(app);
+  
+  // Set auth persistence
+  if (typeof window !== 'undefined') {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.error('Auth persistence error:', error);
+    });
+  }
+  
   db = getFirestore(app);
 } catch (error) {
   console.error('Firebase initialization error:', error);
