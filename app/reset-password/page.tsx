@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
         const email = await verifyPasswordResetCode(auth, oobCode);
         setEmail(email);
         setVerifying(false);
-      } catch (err) {
+      } catch {
         setError('Invalid or expired reset code');
         setVerifying(false);
       }
@@ -68,7 +68,7 @@ export default function ResetPasswordPage() {
         router.push('/login');
       }, 2000);
     } catch (err) {
-      const error = err as any;
+      const error = err as { code?: string };
       if (error.code === 'auth/expired-action-code') {
         setError('Reset code has expired. Please request a new one.');
       } else if (error.code === 'auth/invalid-action-code') {
