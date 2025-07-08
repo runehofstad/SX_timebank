@@ -116,11 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
-    const actionCodeSettings = {
-      url: `${typeof window !== 'undefined' ? window.location.origin : 'https://timebank-studios.tech'}/login`,
-      handleCodeInApp: true,
-    };
-    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    await sendPasswordResetEmail(auth, email);
   };
 
   const value: AuthContextType = {
